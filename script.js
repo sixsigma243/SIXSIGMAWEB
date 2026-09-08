@@ -380,4 +380,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     statNumbers.forEach((el) => counterObserver.observe(el));
   }
+
+  // ── Hero video playback control ──
+  const heroVideo = document.querySelector('.hero-video');
+  const heroVideoToggle = document.getElementById('btn-hero-video-toggle');
+
+  if (heroVideo && heroVideoToggle) {
+    heroVideoToggle.addEventListener('click', () => {
+      if (heroVideo.paused) {
+        heroVideo.play().then(() => {
+          heroVideoToggle.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Chantier Kolwezi (Direct)</span>';
+        }).catch(() => {});
+      } else {
+        heroVideo.pause();
+        heroVideoToggle.innerHTML = '<i class="fa-solid fa-play"></i> <span>Reprendre la vidéo</span>';
+      }
+    });
+  }
 });

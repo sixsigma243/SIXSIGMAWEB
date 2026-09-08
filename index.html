@@ -150,25 +150,41 @@
   </div>
 
   <!-- ═══════════════════════════════════════
-       HERO
+       HERO AVEC VIDÉO DE CHANTIER MINIER (KOLWEZI)
        ═══════════════════════════════════════ -->
   <section class="hero" id="hero">
+    <!-- Video background & Dark Gradient Overlay -->
+    <div class="hero-video-wrapper">
+      <video
+        class="hero-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+        poster="projet-genie-civil-minier.png"
+      >
+        <source src="assets/mine-kolwezi.mp4" type="video/mp4" />
+      </video>
+      <div class="hero-overlay"></div>
+    </div>
+
     <div class="container">
       <div class="hero-content">
         <!-- Badge -->
         <div class="hero-badge reveal">
-          <i class="fa-solid fa-shield-halved"></i>
-          Engagement qualité certifié
+          <i class="fa-solid fa-mountain-sun"></i>
+          Génie Civil Minier &amp; BTP — Grand Katanga
         </div>
 
         <!-- Title -->
         <h1 class="hero-title reveal reveal-delay-1">
-          Bâtir des infrastructures <span class="highlight">durables</span> avec une rigueur absolue
+          Bâtir l'avenir industriel du <span class="highlight">Grand Katanga</span> avec rigueur absolue
         </h1>
 
         <!-- Subtitle -->
         <p class="hero-subtitle reveal reveal-delay-2">
-          SIX SIGMA accompagne vos projets de construction, de la conception à la réalisation, avec une méthodologie éprouvée garantissant qualité, respect des délais et maîtrise des coûts.
+          De Kolwezi à Lubumbashi et Likasi, SIX SIGMA déploie ses équipes d'ingénieurs locaux, sa flotte d'engins lourds et son expertise certifiée HSE pour vos projets miniers, industriels et de génie civil de grande envergure.
         </p>
 
         <!-- CTA -->
@@ -177,9 +193,13 @@
             <i class="fa-solid fa-compass-drafting"></i>
             Découvrir nos services
           </a>
-          <a href="#contact" class="btn btn-secondary btn-lg">
-            <i class="fa-solid fa-phone"></i>
-            Nous contacter
+          <a href="#realisations" class="btn btn-secondary btn-lg btn-hero-secondary">
+            <i class="fa-solid fa-person-digging"></i>
+            Voir nos chantiers
+          </a>
+          <a href="#contact" class="btn btn-accent btn-lg">
+            <i class="fa-solid fa-file-lines"></i>
+            Demander un devis
           </a>
         </div>
 
@@ -187,20 +207,20 @@
         <div class="trust-bar reveal reveal-delay-4">
           <div class="trust-item">
             <div class="trust-icon red">
-              <i class="fa-solid fa-award"></i>
+              <i class="fa-solid fa-truck-monster"></i>
             </div>
             <div class="trust-text">
-              <strong>Normes & Certifications</strong>
-              <span>Standards internationaux respectés</span>
+              <strong>Flotte Lourde &amp; Matériel</strong>
+              <span>Engins miniers et terrassement lourd</span>
             </div>
           </div>
           <div class="trust-item">
             <div class="trust-icon green">
-              <i class="fa-solid fa-clock"></i>
+              <i class="fa-solid fa-shield-heart"></i>
             </div>
             <div class="trust-text">
-              <strong>Respect des délais</strong>
-              <span>Livraison dans les temps convenus</span>
+              <strong>Sécurité &amp; Normes HSE</strong>
+              <span>Zéro compromis sur nos chantiers</span>
             </div>
           </div>
           <div class="trust-item">
@@ -208,12 +228,20 @@
               <i class="fa-solid fa-users-gear"></i>
             </div>
             <div class="trust-text">
-              <strong>Équipes expertes</strong>
-              <span>Ingénieurs et techniciens qualifiés</span>
+              <strong>Expertise Locale Katanga</strong>
+              <span>Kolwezi • Likasi • Lubumbashi</span>
             </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Contrôle vidéo discret -->
+    <div class="hero-video-controls">
+      <button class="btn-video-toggle" id="btn-hero-video-toggle" aria-label="Contrôler la lecture vidéo">
+        <i class="fa-solid fa-pause"></i>
+        <span>Chantier Kolwezi (Direct)</span>
+      </button>
     </div>
   </section>
 
@@ -456,9 +484,30 @@
             </li>
             <li class="values-list-item">
               <i class="fa-solid fa-circle-check"></i>
-              <span><strong>Sécurité :</strong> Respect strict des normes HSE sur tous nos chantiers.</span>
-            </li>
           </ul>
+
+          <!-- Vidéo Équipes Locales sur le terrain (Kolwezi) -->
+          <div class="values-video-card reveal reveal-delay-4">
+            <div class="values-video-wrapper">
+              <video
+                class="values-video"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster="projet-construction-metallique.png"
+              >
+                <source src="assets/equipes-kolwezi.mp4" type="video/mp4" />
+              </video>
+              <div class="values-video-badge">
+                <i class="fa-solid fa-hard-hat"></i> Équipes SIX SIGMA en action — Chantier Kolwezi
+              </div>
+            </div>
+            <p class="values-video-caption">
+              <strong>Rigueur d'exécution &amp; savoir-faire local</strong> : Nos ouvriers et ingénieurs congolais sur le terrain appliquent une tolérance zéro défaut, du coffrage au coulage haute résistance.
+            </p>
+          </div>
         </div>
 
         <!-- Right: Stats -->
