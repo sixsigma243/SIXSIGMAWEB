@@ -5,11 +5,10 @@
 
 /* ── Configurable Constants ── */
 const CONFIG = {
-  // Replace these with your actual numbers
-  PHONE_NUMBER: '+243XXXXXXXXX',       // displayed in contact section
-  PHONE_DISPLAY: '+243 XXX XXX XXX',   // formatted for display
-  WHATSAPP_NUMBER: '243XXXXXXXXX',     // digits only, no + or spaces (for wa.me link)
-  EMAIL: 'contact@sixsigma-btp.com',
+  PHONE_NUMBER: '+243811149816',            // format international pour lien tel:
+  PHONE_DISPLAY: '+243 811 149 816',        // format soigné pour affichage visuel
+  WHATSAPP_NUMBER: '243811149816',          // chiffres uniquement sans '+' ni espaces pour wa.me
+  EMAIL: 'sixsigmaadministration@gmail.com', // email officiel destinataire
   COMPANY: 'SIX SIGMA',
 };
 
@@ -244,18 +243,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data) return;
 
       const waMessage = [
-        `📋 *Nouvelle demande de devis — ${CONFIG.COMPANY}*`,
-        ``,
-        `👤 *Nom :* ${data.name}`,
+        `📋 *NOUVELLE DEMANDE DE DEVIS — ${CONFIG.COMPANY}*`,
+        `────────────────────────`,
+        `👤 *Nom / Entreprise :* ${data.name}`,
         `📧 *Email :* ${data.email}`,
-        data.phone ? `📞 *Tél :* ${data.phone}` : '',
-        `🔧 *Service :* ${data.serviceName}`,
-        ``,
+        `📞 *Téléphone :* ${data.phone ? data.phone : 'Non renseigné'}`,
+        `🔧 *Service concerné :* ${data.serviceName}`,
+        `────────────────────────`,
         `📝 *Description du projet :*`,
         data.message,
-      ]
-        .filter(Boolean)
-        .join('\n');
+      ].join('\n');
 
       const waUrl = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
       window.open(waUrl, '_blank', 'noopener,noreferrer');
@@ -287,16 +284,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = getFormQuoteData();
       if (!data) return;
 
-      const subject = encodeURIComponent(`[Devis SIX SIGMA] ${data.serviceName} - ${data.name}`);
+      const subject = encodeURIComponent(`[Devis ${CONFIG.COMPANY}] ${data.serviceName} - ${data.name}`);
       const body = encodeURIComponent(
-        `Bonjour SIX SIGMA,\n\n` +
-        `Je souhaite solliciter une étude et un devis pour le projet suivant :\n\n` +
-        `• Service concerné : ${data.serviceName}\n` +
+        `Bonjour ${CONFIG.COMPANY},\n\n` +
+        `Je vous adresse ma demande d'étude et de devis pour le projet suivant :\n\n` +
         `• Nom / Entreprise : ${data.name}\n` +
         `• Email de contact : ${data.email}\n` +
-        (data.phone ? `• Téléphone : ${data.phone}\n` : '') +
-        `\nDescription et besoins spécifiques :\n${data.message}\n\n` +
-        `Dans l'attente de votre retour,\nCordialement,\n${data.name}`
+        `• Téléphone : ${data.phone ? data.phone : 'Non renseigné'}\n` +
+        `• Service concerné : ${data.serviceName}\n\n` +
+        `Description et besoins spécifiques :\n${data.message}\n\n` +
+        `Dans l'attente de votre proposition,\nCordialement,\n${data.name}`
       );
 
       window.location.href = `mailto:${CONFIG.EMAIL}?subject=${subject}&body=${body}`;
@@ -311,17 +308,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data) return;
 
       const summary = [
-        `=== DEMANDE DE DEVIS SIX SIGMA ===`,
-        `Service : ${data.serviceName}`,
-        `Nom / Contact : ${data.name}`,
-        `Email : ${data.email}`,
-        data.phone ? `Téléphone : ${data.phone}` : null,
-        `Projet :`,
+        `=== DEMANDE DE DEVIS — ${CONFIG.COMPANY} ===`,
+        `• Nom / Entreprise : ${data.name}`,
+        `• Email de contact : ${data.email}`,
+        `• Téléphone : ${data.phone ? data.phone : 'Non renseigné'}`,
+        `• Service concerné : ${data.serviceName}`,
+        ``,
+        `Description du projet :`,
         data.message,
-        `==================================`,
-      ]
-        .filter(Boolean)
-        .join('\n');
+        `===========================================`,
+      ].join('\n');
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard
