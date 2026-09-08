@@ -166,10 +166,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 800);
   };
 
-  // Attach click handlers to all service cards and project cards with data-service
-  const clickableItems = document.querySelectorAll('.service-card[data-service], .project-card[data-service]');
+  // Attach click handlers to all bento cards, service cards, and project cards with data-service
+  const clickableItems = document.querySelectorAll('.bento-card[data-service], .service-card[data-service], .project-card[data-service]');
   clickableItems.forEach((card) => {
-    const cta = card.querySelector('.service-cta, .project-cta-link');
+    const cta = card.querySelector('.bento-cta, .service-cta, .project-cta-link');
     if (cta) {
       cta.addEventListener('click', (e) => {
         e.preventDefault();
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.service-cta, .project-cta-link')) return;
+      if (e.target.closest('.bento-cta, .service-cta, .project-cta-link')) return;
       scrollToFormWithService(card.dataset.service);
     });
   });
@@ -206,7 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
-    const required = ['name', 'email', 'service', 'message'];
+    // Streamlined 4 essential fields
+    const required = ['name', 'phone', 'service', 'message'];
     const missing = required.filter((f) => !data[f] || data[f].trim() === '');
 
     if (missing.length > 0) {
@@ -217,12 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return null;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
-      showFeedback('Veuillez renseigner une adresse email valide.', true);
-      const emailField = form.querySelector('#form-email');
-      if (emailField) emailField.focus();
-      return null;
+    // Email is optional, but if provided, validate format
+    if (data.email && data.email.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email.trim())) {
+        showFeedback('Veuillez renseigner une adresse email valide ou laisser le champ vide.', true);
+        const emailField = form.querySelector('#form-email');
+        if (emailField) emailField.focus();
+        return null;
+      }
     }
 
     const selectedOption = serviceSelect ? serviceSelect.options[serviceSelect.selectedIndex] : null;
@@ -243,14 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data) return;
 
       const waMessage = [
-        `📋 *NOUVELLE DEMANDE DE DEVIS — ${CONFIG.COMPANY}*`,
+        `🏗️ *COTATION DIRECTE — ${CONFIG.COMPANY}*`,
         `────────────────────────`,
-        `👤 *Nom / Entreprise :* ${data.name}`,
-        `📧 *Email :* ${data.email}`,
-        `📞 *Téléphone :* ${data.phone ? data.phone : 'Non renseigné'}`,
-        `🔧 *Service concerné :* ${data.serviceName}`,
+        `👤 *Nom / Société :* ${data.name}`,
+        `📞 *Téléphone / WhatsApp :* ${data.phone}`,
+        `📧 *Email :* ${data.email && data.email.trim() !== '' ? data.email : 'Non renseigné'}`,
+        `🔧 *Pôle d'expertise :* ${data.serviceName}`,
         `────────────────────────`,
-        `📝 *Description du projet :*`,
+        `📝 *Projet & Localisation :*`,
         data.message,
       ].join('\n');
 
@@ -274,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
       }
 
-      showFeedback('Votre devis a été préparé pour WhatsApp.');
+      showFeedback('Votre demande a été préparée pour WhatsApp.');
     });
   }
 
@@ -284,16 +288,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = getFormQuoteData();
       if (!data) return;
 
-      const subject = encodeURIComponent(`[Devis ${CONFIG.COMPANY}] ${data.serviceName} - ${data.name}`);
+      const subject = encodeURIComponent(`[Demande de Cotation] ${data.serviceName} - ${data.name}`);
       const body = encodeURIComponent(
         `Bonjour ${CONFIG.COMPANY},\n\n` +
-        `Je vous adresse ma demande d'étude et de devis pour le projet suivant :\n\n` +
-        `• Nom / Entreprise : ${data.name}\n` +
-        `• Email de contact : ${data.email}\n` +
-        `• Téléphone : ${data.phone ? data.phone : 'Non renseigné'}\n` +
-        `• Service concerné : ${data.serviceName}\n\n` +
-        `Description et besoins spécifiques :\n${data.message}\n\n` +
-        `Dans l'attente de votre proposition,\nCordialement,\n${data.name}`
+        `Je vous transmets ma demande de cotation pour le projet suivant :\n\n` +
+        `• Nom / Société : ${data.name}\n` +
+        `• Téléphone / WhatsApp : ${data.phone}\n` +
+        `• Email : ${data.email && data.email.trim() !== '' ? data.email : 'Non renseigné'}\n` +
+        `• Pôle concerné : ${data.serviceName}\n\n` +
+        `Description des travaux & Localisation :\n${data.message}\n\n` +
+        `Dans l'attente de votre chiffrage technique,\nCordialement,\n${data.name}`
       );
 
       window.location.href = `mailto:${CONFIG.EMAIL}?subject=${subject}&body=${body}`;
@@ -308,22 +312,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!data) return;
 
       const summary = [
-        `=== DEMANDE DE DEVIS — ${CONFIG.COMPANY} ===`,
-        `• Nom / Entreprise : ${data.name}`,
-        `• Email de contact : ${data.email}`,
-        `• Téléphone : ${data.phone ? data.phone : 'Non renseigné'}`,
-        `• Service concerné : ${data.serviceName}`,
+        `=== DEMANDE DE COTATION DIRECTE — ${CONFIG.COMPANY} ===`,
+        `• Nom / Société : ${data.name}`,
+        `• Téléphone / WhatsApp : ${data.phone}`,
+        `• Email : ${data.email && data.email.trim() !== '' ? data.email : 'Non renseigné'}`,
+        `• Pôle concerné : ${data.serviceName}`,
         ``,
-        `Description du projet :`,
+        `Description & Localisation du chantier :`,
         data.message,
-        `===========================================`,
+        `======================================================`,
       ].join('\n');
 
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard
           .writeText(summary)
           .then(() => {
-            showFeedback('✅ Récapitulatif copié dans le presse-papier !');
+            showFeedback('Récapitulatif copié dans le presse-papier !');
           })
           .catch(() => {
             prompt('Copiez votre récapitulatif de devis ci-dessous :', summary);
