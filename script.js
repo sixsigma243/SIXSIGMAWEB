@@ -167,94 +167,178 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 800);
   };
 
-  // Attach click handlers to all service cards with data-service
-  document.querySelectorAll('.service-card[data-service]').forEach((card) => {
-    // Click on the CTA link inside the card
-    const cta = card.querySelector('.service-cta');
+  // Attach click handlers to all service cards and project cards with data-service
+  const clickableItems = document.querySelectorAll('.service-card[data-service], .project-card[data-service]');
+  clickableItems.forEach((card) => {
+    const cta = card.querySelector('.service-cta, .project-cta-link');
     if (cta) {
       cta.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         scrollToFormWithService(card.dataset.service);
       });
     }
 
-    // Also make the entire card clickable (cursor is already pointer via CSS)
     card.addEventListener('click', (e) => {
-      // Don't double-fire if they clicked the CTA link directly
-      if (e.target.closest('.service-cta')) return;
+      if (e.target.closest('.service-cta, .project-cta-link')) return;
       scrollToFormWithService(card.dataset.service);
     });
   });
 
-  // ── Contact form handling with WhatsApp dispatch ──
+  // ── Contact form handling (WhatsApp + Multi-Channel Fallback) ──
   const form = document.getElementById('contact-form');
+  const fallbackFeedback = document.getElementById('fallback-feedback');
+  const btnSubmitEmail = document.getElementById('btn-submit-email');
+  const btnCopyQuote = document.getElementById('btn-copy-quote');
+
+  const showFeedback = (message, isError = false) => {
+    if (!fallbackFeedback) return;
+    fallbackFeedback.textContent = message;
+    fallbackFeedback.className = `fallback-feedback ${isError ? 'error' : ''}`;
+    setTimeout(() => {
+      fallbackFeedback.textContent = '';
+      fallbackFeedback.className = 'fallback-feedback';
+    }, 4500);
+  };
+
+  const getFormQuoteData = () => {
+    if (!form) return null;
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    const required = ['name', 'email', 'service', 'message'];
+    const missing = required.filter((f) => !data[f] || data[f].trim() === '');
+
+    if (missing.length > 0) {
+      showFeedback('Veuillez remplir tous les champs obligatoires (*).', true);
+      // Highlight first invalid field
+      const firstInvalid = form.querySelector(`[name="${missing[0]}"]`);
+      if (firstInvalid) firstInvalid.focus();
+      return null;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      showFeedback('Veuillez renseigner une adresse email valide.', true);
+      const emailField = form.querySelector('#form-email');
+      if (emailField) emailField.focus();
+      return null;
+    }
+
+    const selectedOption = serviceSelect ? serviceSelect.options[serviceSelect.selectedIndex] : null;
+    const serviceName = selectedOption ? selectedOption.textContent : data.service;
+
+    return {
+      ...data,
+      serviceName,
+    };
+  };
+
+  // Primary: WhatsApp Dispatch
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
 
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
+      const data = getFormQuoteData();
+      if (!data) return;
 
-      // Simple validation
-      const required = ['name', 'email', 'service', 'message'];
-      const missing = required.filter((f) => !data[f] || data[f].trim() === '');
-
-      if (missing.length > 0) {
-        alert('Veuillez remplir tous les champs obligatoires.');
-        return;
-      }
-
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(data.email)) {
-        alert('Veuillez entrer une adresse email valide.');
-        return;
-      }
-
-      // Get the readable service name from the select
-      const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-      const serviceName = selectedOption ? selectedOption.textContent : data.service;
-
-      // Build WhatsApp message
       const waMessage = [
         `📋 *Nouvelle demande de devis — ${CONFIG.COMPANY}*`,
         ``,
         `👤 *Nom :* ${data.name}`,
         `📧 *Email :* ${data.email}`,
         data.phone ? `📞 *Tél :* ${data.phone}` : '',
-        `🔧 *Service :* ${serviceName}`,
+        `🔧 *Service :* ${data.serviceName}`,
         ``,
-        `📝 *Description :*`,
+        `📝 *Description du projet :*`,
         data.message,
       ]
         .filter(Boolean)
         .join('\n');
 
       const waUrl = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(waMessage)}`;
-
-      // Open WhatsApp in a new tab
       window.open(waUrl, '_blank', 'noopener,noreferrer');
 
-      // Success feedback
-      const submitBtn = form.querySelector('.form-submit .btn');
-      const originalText = submitBtn.innerHTML;
-      submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Envoyé via WhatsApp !';
-      submitBtn.disabled = true;
-      submitBtn.style.background = 'var(--clr-accent)';
-      submitBtn.style.borderColor = 'var(--clr-accent)';
+      // Visual button feedback
+      const submitBtn = document.getElementById('btn-submit-whatsapp');
+      if (submitBtn) {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Redirection WhatsApp lancée !';
+        submitBtn.disabled = true;
+        submitBtn.style.background = 'var(--clr-accent)';
+        submitBtn.style.borderColor = 'var(--clr-accent)';
 
-      form.reset();
+        setTimeout(() => {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          submitBtn.style.background = '';
+          submitBtn.style.borderColor = '';
+        }, 3500);
+      }
 
-      setTimeout(() => {
-        submitBtn.innerHTML = originalText;
-        submitBtn.disabled = false;
-        submitBtn.style.background = '';
-        submitBtn.style.borderColor = '';
-      }, 3000);
+      showFeedback('Votre devis a été préparé pour WhatsApp.');
     });
   }
 
-  // ── Counter animation for stats ──
+  // Fallback 1: Direct Email (mailto)
+  if (btnSubmitEmail) {
+    btnSubmitEmail.addEventListener('click', () => {
+      const data = getFormQuoteData();
+      if (!data) return;
+
+      const subject = encodeURIComponent(`[Devis SIX SIGMA] ${data.serviceName} - ${data.name}`);
+      const body = encodeURIComponent(
+        `Bonjour SIX SIGMA,\n\n` +
+        `Je souhaite solliciter une étude et un devis pour le projet suivant :\n\n` +
+        `• Service concerné : ${data.serviceName}\n` +
+        `• Nom / Entreprise : ${data.name}\n` +
+        `• Email de contact : ${data.email}\n` +
+        (data.phone ? `• Téléphone : ${data.phone}\n` : '') +
+        `\nDescription et besoins spécifiques :\n${data.message}\n\n` +
+        `Dans l'attente de votre retour,\nCordialement,\n${data.name}`
+      );
+
+      window.location.href = `mailto:${CONFIG.EMAIL}?subject=${subject}&body=${body}`;
+      showFeedback('Client de messagerie ouvert avec le devis pré-rempli.');
+    });
+  }
+
+  // Fallback 2: Copy Quote Summary to Clipboard
+  if (btnCopyQuote) {
+    btnCopyQuote.addEventListener('click', () => {
+      const data = getFormQuoteData();
+      if (!data) return;
+
+      const summary = [
+        `=== DEMANDE DE DEVIS SIX SIGMA ===`,
+        `Service : ${data.serviceName}`,
+        `Nom / Contact : ${data.name}`,
+        `Email : ${data.email}`,
+        data.phone ? `Téléphone : ${data.phone}` : null,
+        `Projet :`,
+        data.message,
+        `==================================`,
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard
+          .writeText(summary)
+          .then(() => {
+            showFeedback('✅ Récapitulatif copié dans le presse-papier !');
+          })
+          .catch(() => {
+            prompt('Copiez votre récapitulatif de devis ci-dessous :', summary);
+          });
+      } else {
+        prompt('Copiez votre récapitulatif de devis ci-dessous :', summary);
+      }
+    });
+  }
+
+  // ── Counter animation for stats (starts at 0 on scroll, counts to target) ──
   const statNumbers = document.querySelectorAll('.stat-number[data-target]');
 
   if (statNumbers.length > 0 && 'IntersectionObserver' in window) {
@@ -267,6 +351,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const suffix = el.dataset.suffix || '';
             const duration = 2000;
             const start = performance.now();
+
+            // Set to 0 at animation onset
+            el.textContent = '0' + suffix;
 
             const animate = (now) => {
               const elapsed = now - start;
@@ -288,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       },
-      { threshold: 0.5 }
+      { threshold: 0.4 }
     );
 
     statNumbers.forEach((el) => counterObserver.observe(el));

@@ -687,6 +687,186 @@ button, input, select, textarea {
 }
 
 /* ============================================
+   PROJECTS / RÉALISATIONS SECTION
+   ============================================ */
+.projects {
+  background: var(--clr-white);
+  position: relative;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-2xl);
+}
+
+.project-card {
+  background: var(--clr-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--clr-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  cursor: pointer;
+}
+
+.project-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(158, 42, 43, 0.2);
+}
+
+.project-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: var(--clr-secondary);
+}
+
+.project-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project-card:hover .project-img {
+  transform: scale(1.06);
+}
+
+.project-badges {
+  position: absolute;
+  top: var(--sp-md);
+  left: var(--sp-md);
+  right: var(--sp-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-xs);
+  pointer-events: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--ff-heading);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+}
+
+.badge-primary {
+  background: rgba(158, 42, 43, 0.92);
+  color: var(--clr-white);
+}
+
+.badge-success {
+  background: rgba(112, 160, 56, 0.95);
+  color: var(--clr-white);
+}
+
+.project-body {
+  padding: var(--sp-xl);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  font-size: var(--fs-xs);
+  color: var(--clr-text-muted);
+  margin-bottom: var(--sp-sm);
+}
+
+.project-location i,
+.project-scale i {
+  color: var(--clr-primary);
+  margin-right: 4px;
+}
+
+.project-title {
+  font-family: var(--ff-heading);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--clr-secondary);
+  line-height: 1.35;
+  margin-bottom: var(--sp-sm);
+  transition: color var(--transition);
+}
+
+.project-card:hover .project-title {
+  color: var(--clr-primary);
+}
+
+.project-desc {
+  font-size: var(--fs-sm);
+  color: var(--clr-text-muted);
+  line-height: 1.65;
+  margin-bottom: var(--sp-lg);
+  flex-grow: 1;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  margin-bottom: var(--sp-lg);
+}
+
+.project-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--clr-secondary);
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+
+.project-footer {
+  padding-top: var(--sp-md);
+  border-top: 1px solid var(--clr-border);
+}
+
+.project-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-family: var(--ff-heading);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--clr-primary);
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.project-cta-link:hover {
+  color: var(--clr-primary-dark);
+  gap: var(--sp-md);
+}
+
+.project-cta-link i {
+  font-size: var(--fs-xs);
+  transition: transform var(--transition);
+}
+
+.project-cta-link:hover i {
+  transform: translateX(4px);
+}
+
+/* ============================================
    VALUES / ENGAGEMENT SECTION
    ============================================ */
 .values {
@@ -956,6 +1136,84 @@ button, input, select, textarea {
   margin-top: var(--sp-md);
 }
 
+/* Fallback multi-canal */
+.form-fallbacks {
+  margin-top: var(--sp-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.fallback-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--clr-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fallback-divider::before,
+.fallback-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px dashed var(--clr-border);
+}
+
+.fallback-divider span {
+  padding: 0 var(--sp-sm);
+}
+
+.fallback-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-sm);
+}
+
+.btn-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--clr-bg);
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  color: var(--clr-secondary);
+  font-family: var(--ff-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn-fallback:hover {
+  background: var(--clr-white);
+  border-color: var(--clr-primary);
+  color: var(--clr-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-fallback i {
+  font-size: 0.85rem;
+}
+
+.fallback-feedback {
+  min-height: 1.25rem;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-align: center;
+  color: var(--clr-accent-dark);
+  transition: opacity var(--transition);
+}
+
+.fallback-feedback.error {
+  color: var(--clr-primary);
+}
+
 /* ============================================
    FOOTER
    ============================================ */
@@ -1087,6 +1345,10 @@ button, input, select, textarea {
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
   .values-grid {
     grid-template-columns: 1fr;
     gap: var(--sp-2xl);
@@ -1159,9 +1421,14 @@ button, input, select, textarea {
     grid-template-columns: 1fr;
   }
 
-  /* Services */
-  .services-grid {
+  /* Services & Projects */
+  .services-grid,
+  .projects-grid {
     grid-template-columns: 1fr;
+  }
+
+  .project-image-wrapper {
+    height: 220px;
   }
 
   /* Stats */
@@ -1171,6 +1438,10 @@ button, input, select, textarea {
 
   /* Contact form */
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fallback-buttons {
     grid-template-columns: 1fr;
   }
 
@@ -1192,5 +1463,13 @@ button, input, select, textarea {
 
   .service-card {
     padding: var(--sp-xl);
+  }
+
+  .project-image-wrapper {
+    height: 190px;
+  }
+
+  .project-body {
+    padding: var(--sp-lg);
   }
 }

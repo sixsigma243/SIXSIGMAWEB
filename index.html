@@ -11,12 +11,85 @@
   <link rel="icon" type="image/jpeg" href="logo.jpg" />
   <link rel="apple-touch-icon" href="logo.jpg" />
 
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="fr_FR" />
+  <meta property="og:site_name" content="SIX SIGMA" />
+  <meta property="og:url" content="https://sixsigmaweb.vercel.app/" />
+  <meta property="og:title" content="SIX SIGMA | La constance dans la qualité" />
+  <meta property="og:description" content="Entreprise de Génie Civil, Construction Métallique, Bureau d'Études et Travaux Publics à Lubumbashi, RDC." />
+  <meta property="og:image" content="https://sixsigmaweb.vercel.app/logo.jpg" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SIX SIGMA | La constance dans la qualité" />
+  <meta name="twitter:description" content="Entreprise de Génie Civil, Construction Métallique, Bureau d'Études et Travaux Publics à Lubumbashi, RDC." />
+  <meta name="twitter:image" content="https://sixsigmaweb.vercel.app/logo.jpg" />
+
+  <!-- Structured Data: Schema.org GeneralContractor / ConstructionBusiness -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GeneralContractor",
+    "name": "SIX SIGMA",
+    "legalName": "SIX SIGMA SARL",
+    "url": "https://sixsigmaweb.vercel.app/",
+    "logo": "https://sixsigmaweb.vercel.app/logo.jpg",
+    "image": "https://sixsigmaweb.vercel.app/projet-genie-civil-minier.png",
+    "description": "Entreprise spécialisée en Génie Civil lourd, Construction Métallique, Bureau d'Études, Assainissement et Travaux Publics.",
+    "slogan": "La constance dans la qualité",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Lubumbashi",
+      "addressRegion": "Haut-Katanga",
+      "addressCountry": "CD"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -11.66089,
+      "longitude": 27.47938
+    },
+    "areaServed": [
+      {
+        "@type": "AdministrativeArea",
+        "name": "Haut-Katanga"
+      },
+      {
+        "@type": "Country",
+        "name": "République Démocratique du Congo"
+      }
+    ],
+    "email": "contact@sixsigma-btp.com",
+    "priceRange": "$$",
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "17:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "08:00",
+        "closes": "12:00"
+      }
+    ]
+  }
+  </script>
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- FontAwesome with Subresource Integrity (SRI) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
 
   <!-- Styles -->
   <link rel="stylesheet" href="styles.css" />
@@ -36,6 +109,7 @@
       <nav class="nav">
         <ul class="nav-links">
           <li><a href="#services" class="nav-link">Services</a></li>
+          <li><a href="#realisations" class="nav-link">Réalisations</a></li>
           <li><a href="#valeurs" class="nav-link">À propos</a></li>
           <li><a href="#contact" class="nav-link">Contact</a></li>
         </ul>
@@ -65,6 +139,7 @@
     </div>
     <nav class="mobile-menu-links">
       <a href="#services" class="nav-link">Services</a>
+      <a href="#realisations" class="nav-link">Réalisations</a>
       <a href="#valeurs" class="nav-link">À propos</a>
       <a href="#contact" class="nav-link">Contact</a>
     </nav>
@@ -256,6 +331,100 @@
   </section>
 
   <!-- ═══════════════════════════════════════
+       RÉALISATIONS & PROJETS PHARES
+       ═══════════════════════════════════════ -->
+  <section class="section projects" id="realisations">
+    <div class="container">
+      <div class="services-header">
+        <div class="section-label reveal">
+          <i class="fa-solid fa-helmet-safety"></i>
+          Projets d'envergure
+        </div>
+        <h2 class="section-title reveal reveal-delay-1">Nos réalisations sur le terrain</h2>
+        <p class="section-subtitle reveal reveal-delay-2">
+          Des infrastructures minières lourdes aux complexes industriels en charpente métallique : un aperçu de nos déploiements majeurs en République Démocratique du Congo.
+        </p>
+      </div>
+
+      <div class="projects-grid">
+        <!-- Projet 1 : Génie Civil & Mines -->
+        <article class="project-card reveal" data-service="genie-civil">
+          <div class="project-image-wrapper">
+            <img
+              src="projet-genie-civil-minier.png"
+              alt="Terrassement et génie civil minier au Katanga - SIX SIGMA"
+              class="project-img"
+              loading="lazy"
+            />
+            <div class="project-badges">
+              <span class="badge badge-primary"><i class="fa-solid fa-mountain-sun"></i> Génie Civil Minier</span>
+              <span class="badge badge-success"><i class="fa-solid fa-check"></i> En exploitation</span>
+            </div>
+          </div>
+          <div class="project-body">
+            <div class="project-meta">
+              <span class="project-location"><i class="fa-solid fa-location-dot"></i> Grand Katanga, RDC</span>
+              <span class="project-scale"><i class="fa-solid fa-layer-group"></i> Infrastructure Lourde</span>
+            </div>
+            <h3 class="project-title">Plateforme Minière & Terrassement de Grande Envergure</h3>
+            <p class="project-desc">
+              Terrassement massif et nivellement de plateformes pour unités de concassage et traitement de minerai. Fondations profondes en béton armé, ouvrages hydrauliques de rétention et application rigoureuse des normes HSE et de la méthode Six Sigma.
+            </p>
+            <div class="project-tags">
+              <span class="project-tag">Terrassement massif</span>
+              <span class="project-tag">Béton armé</span>
+              <span class="project-tag">Sécurité HSE</span>
+              <span class="project-tag">Ouvrages hydrauliques</span>
+            </div>
+            <div class="project-footer">
+              <a href="#contact" class="service-cta project-cta-link" data-service="genie-civil">
+                Demander une étude similaire <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- Projet 2 : Construction Métallique -->
+        <article class="project-card reveal reveal-delay-1" data-service="construction-metallique">
+          <div class="project-image-wrapper">
+            <img
+              src="projet-construction-metallique.png"
+              alt="Hangar industriel et charpente métallique - SIX SIGMA"
+              class="project-img"
+              loading="lazy"
+            />
+            <div class="project-badges">
+              <span class="badge badge-primary"><i class="fa-solid fa-industry"></i> Construction Métallique</span>
+              <span class="badge badge-success"><i class="fa-solid fa-check"></i> Livré clés en main</span>
+            </div>
+          </div>
+          <div class="project-body">
+            <div class="project-meta">
+              <span class="project-location"><i class="fa-solid fa-location-dot"></i> Zone Industrielle, Lubumbashi</span>
+              <span class="project-scale"><i class="fa-solid fa-ruler-combined"></i> Hangar Bi-Niveau</span>
+            </div>
+            <h3 class="project-title">Complexe Industriel & Charpente Métallique Grande Portée</h3>
+            <p class="project-desc">
+              Conception, usinage de précision et érection d'une charpente métallique industrielle à grande portée. Intègre des mezzanines avec bureaux administratifs, un bardage haute durabilité, une dalle renforcée et des chemins de roulement.
+            </p>
+            <div class="project-tags">
+              <span class="project-tag">Charpente acier</span>
+              <span class="project-tag">Grande portée</span>
+              <span class="project-tag">Bureaux intégrés</span>
+              <span class="project-tag">Usinage certifié</span>
+            </div>
+            <div class="project-footer">
+              <a href="#contact" class="service-cta project-cta-link" data-service="construction-metallique">
+                Demander une étude similaire <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
        VALEURS / ENGAGEMENT QUALITÉ
        ═══════════════════════════════════════ -->
   <section class="section values" id="valeurs">
@@ -295,22 +464,22 @@
         <!-- Right: Stats -->
         <div class="stats-grid">
           <div class="stat-card reveal">
-            <div class="stat-number" data-target="150" data-suffix="+">0</div>
+            <div class="stat-number" data-target="150" data-suffix="+">150+</div>
             <div class="stat-label">Projets réalisés</div>
             <div class="stat-desc">Infrastructures livrées avec succès</div>
           </div>
           <div class="stat-card reveal reveal-delay-1">
-            <div class="stat-number" data-target="98" data-suffix="%">0</div>
+            <div class="stat-number" data-target="98" data-suffix="%">98%</div>
             <div class="stat-label">Taux de satisfaction</div>
             <div class="stat-desc">Clients satisfaits de nos prestations</div>
           </div>
           <div class="stat-card reveal reveal-delay-2">
-            <div class="stat-number" data-target="200" data-suffix="+">0</div>
+            <div class="stat-number" data-target="200" data-suffix="+">200+</div>
             <div class="stat-label">Collaborateurs</div>
             <div class="stat-desc">Ingénieurs et techniciens qualifiés</div>
           </div>
           <div class="stat-card reveal reveal-delay-3">
-            <div class="stat-number" data-target="15" data-suffix=" ans">0</div>
+            <div class="stat-number" data-target="15" data-suffix=" ans">15 ans</div>
             <div class="stat-label">D'expérience</div>
             <div class="stat-desc">Au service du secteur BTP</div>
           </div>
@@ -426,10 +595,28 @@
               </div>
 
               <div class="form-group full-width form-submit">
-                <button type="submit" class="btn btn-accent btn-lg" style="width: 100%;">
+                <button type="submit" class="btn btn-accent btn-lg" id="btn-submit-whatsapp" style="width: 100%;">
                   <i class="fa-brands fa-whatsapp"></i>
                   Envoyer via WhatsApp
                 </button>
+
+                <!-- Fallback multi-canal pour utilisateurs sans WhatsApp -->
+                <div class="form-fallbacks">
+                  <div class="fallback-divider">
+                    <span>ou options sans WhatsApp</span>
+                  </div>
+                  <div class="fallback-buttons">
+                    <button type="button" class="btn btn-fallback" id="btn-submit-email">
+                      <i class="fa-solid fa-envelope"></i>
+                      Envoyer par Email direct
+                    </button>
+                    <button type="button" class="btn btn-fallback" id="btn-copy-quote">
+                      <i class="fa-solid fa-copy"></i>
+                      Copier le récapitulatif
+                    </button>
+                  </div>
+                  <div class="fallback-feedback" id="fallback-feedback" aria-live="polite"></div>
+                </div>
               </div>
             </div>
           </form>
