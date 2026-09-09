@@ -397,4 +397,171 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ── PROJECT DETAIL MODAL ──
+  const projectData = {
+    'genie-civil': {
+      img: 'projet-genie-civil-minier.png',
+      title: 'Plateforme Minière & Terrassement de Grande Envergure',
+      location: 'Site Minier Industriel, RDC',
+      badges: [
+        { text: 'Génie Civil Minier', icon: 'fa-mountain-sun', type: 'primary' },
+        { text: 'En exploitation', icon: 'fa-check', type: 'success' }
+      ],
+      desc: 'Terrassement massif et nivellement de plateformes pour unités de concassage et traitement de minerai. Fondations profondes en béton armé haute résistance (C35/45), ouvrages hydrauliques de rétention des eaux et des résidus miniers, et pistes renforcées pour convois de 120 tonnes. Application rigoureuse des protocoles HSE avec tolérance zéro incident (Zero LTI).',
+      stats: [
+        { value: '45 000 m³', label: 'Terrassement' },
+        { value: '2 800 m³', label: 'Béton coulé' },
+        { value: '0 LTI', label: 'Accidents' },
+        { value: '14', label: 'Engins mobilisés' },
+        { value: '120+', label: 'Ouvriers déployés' },
+        { value: '8 mois', label: 'Délai livraison' }
+      ],
+      tags: ['Terrassement massif', 'Béton armé C35/45', 'Sécurité HSE', 'Ouvrages hydrauliques', 'Pistes minières', 'Fondations profondes']
+    },
+    'construction-metallique': {
+      img: 'projet-construction-metallique.png',
+      title: 'Complexe Industriel & Charpente Métallique Grande Portée',
+      location: 'Zone Industrielle & Logistique',
+      badges: [
+        { text: 'Construction Métallique', icon: 'fa-industry', type: 'primary' },
+        { text: 'Livré clés en main', icon: 'fa-check', type: 'success' }
+      ],
+      desc: 'Conception, fabrication en atelier et érection sur site d\'une charpente métallique industrielle à grande portée (30m libre). Structure intégrant des mezzanines avec bureaux administratifs, un bardage haute durabilité en tôle prélaquée, une dalle béton renforcée fibre et des chemins de roulement pour pont roulant de 10 tonnes.',
+      stats: [
+        { value: '480 T', label: 'Acier structurel' },
+        { value: '2 200 m²', label: 'Surface couverte' },
+        { value: '30 m', label: 'Portée libre' },
+        { value: '10 T', label: 'Pont roulant' },
+        { value: '85', label: 'Soudeurs & monteurs' },
+        { value: '6 mois', label: 'Délai livraison' }
+      ],
+      tags: ['Charpente acier', 'Grande portée', 'Bureaux intégrés', 'Usinage certifié', 'Bardage prélaqué', 'Pont roulant']
+    }
+  };
+
+  const modalOverlay = document.getElementById('project-modal-overlay');
+  const modalClose = document.getElementById('modal-close');
+
+  const openProjectModal = (projectKey) => {
+    const data = projectData[projectKey];
+    if (!data || !modalOverlay) return;
+
+    // Fill modal
+    document.getElementById('modal-img').src = data.img;
+    document.getElementById('modal-img').alt = data.title;
+    document.getElementById('modal-title').textContent = data.title;
+    document.getElementById('modal-location-text').textContent = data.location;
+    document.getElementById('modal-desc').textContent = data.desc;
+
+    // Badges
+    const badgesEl = document.getElementById('modal-badges');
+    badgesEl.innerHTML = data.badges.map(b =>
+      `<span class="badge badge-${b.type}"><i class="fa-solid ${b.icon}"></i> ${b.text}</span>`
+    ).join('');
+
+    // Stats
+    const statsEl = document.getElementById('modal-stats');
+    statsEl.innerHTML = data.stats.map(s =>
+      `<div class="project-modal-stat">
+        <div class="project-modal-stat-value">${s.value}</div>
+        <div class="project-modal-stat-label">${s.label}</div>
+      </div>`
+    ).join('');
+
+    // Tags
+    const tagsEl = document.getElementById('modal-tags');
+    tagsEl.innerHTML = data.tags.map(t =>
+      `<span class="project-tag">${t}</span>`
+    ).join('');
+
+    // Open
+    modalOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeProjectModal = () => {
+    if (!modalOverlay) return;
+    modalOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  // Close triggers
+  if (modalClose) modalClose.addEventListener('click', closeProjectModal);
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeProjectModal();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeProjectModal();
+  });
+
+  // Modal CTA quote closes modal and scrolls to form
+  const modalCtaQuote = document.getElementById('modal-cta-quote');
+  if (modalCtaQuote) {
+    modalCtaQuote.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeProjectModal();
+      const ct = document.getElementById('contact');
+      if (ct) ct.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  // Open triggers — "Voir la fiche technique" buttons
+  document.querySelectorAll('.project-view-btn[data-project]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openProjectModal(btn.dataset.project);
+    });
+  });
+
+  // ── REAL-TIME FORM VALIDATION ──
+  const formFields = form ? form.querySelectorAll('.form-input, .form-select, .form-textarea') : [];
+
+  const validateField = (field) => {
+    const name = field.name;
+    const value = field.value.trim();
+    const isRequired = field.hasAttribute('required');
+
+    // Remove old state
+    field.classList.remove('valid', 'invalid');
+
+    // Don't validate empty optional fields
+    if (!isRequired && value === '') return;
+
+    let isValid = false;
+
+    if (name === 'email') {
+      // Optional but if filled, must be valid
+      if (value === '') {
+        return; // optional and empty = no indicator
+      }
+      isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    } else if (name === 'phone') {
+      isValid = value.length >= 8;
+    } else if (name === 'service') {
+      isValid = value !== '';
+    } else {
+      isValid = value.length >= 2;
+    }
+
+    field.classList.add(isValid ? 'valid' : 'invalid');
+  };
+
+  formFields.forEach((field) => {
+    field.addEventListener('blur', () => validateField(field));
+    field.addEventListener('input', () => {
+      // Clear invalid state on input (re-validate on blur)
+      if (field.classList.contains('invalid') && field.value.trim().length >= 2) {
+        field.classList.remove('invalid');
+        field.classList.add('valid');
+      }
+    });
+    if (field.tagName === 'SELECT') {
+      field.addEventListener('change', () => validateField(field));
+    }
+  });
+
 });
