@@ -1,0 +1,725 @@
+/* ==========================================================================
+   SIX SIGMA — CHARTE HSE & SÉCURITÉ INDUSTRIELLE
+   Page Styling (hse.css)
+   ========================================================================== */
+
+/* ── Hero Section HSE (Anthracite Profond & Vert Sécurité Olive) ── */
+.hse-hero {
+  position: relative;
+  padding: 5.5rem 0 4rem;
+  background: radial-gradient(circle at 85% 15%, rgba(112, 160, 56, 0.22) 0%, transparent 55%),
+              radial-gradient(circle at 15% 85%, rgba(158, 42, 43, 0.18) 0%, transparent 50%),
+              #0f1115;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.hse-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.hse-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hse-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(112, 160, 56, 0.2);
+  border: 1px solid rgba(112, 160, 56, 0.45);
+  border-radius: var(--radius-xs);
+  color: #a4db68;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-md);
+}
+
+.hse-hero-title {
+  font-family: var(--ff-heading);
+  font-size: clamp(2.1rem, 4.2vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #ffffff;
+  letter-spacing: -0.8px;
+  margin-bottom: var(--sp-md);
+}
+
+.hse-hero-subtitle {
+  font-size: clamp(1rem, 1.25vw, 1.15rem);
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  max-width: 780px;
+  margin: 0 auto var(--sp-xl);
+}
+
+/* Trust Bar HSE */
+.hse-trust-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-md);
+  margin-top: var(--sp-xl);
+  text-align: left;
+}
+
+.hse-trust-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.hse-trust-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(112, 160, 56, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hse-trust-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-xs);
+  background: rgba(112, 160, 56, 0.2);
+  color: #a4db68;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.hse-trust-val {
+  font-family: var(--ff-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.hse-trust-lbl {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.3;
+}
+
+/* ── Section Piliers HSE ── */
+.hse-pillars-section {
+  padding: 5rem 0;
+  background: var(--clr-bg);
+}
+
+.hse-section-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto var(--sp-2xl);
+}
+
+.hse-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(112, 160, 56, 0.15);
+  border: 1px solid rgba(112, 160, 56, 0.35);
+  border-radius: var(--radius-xs);
+  color: #5a8230;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: var(--sp-sm);
+}
+
+.hse-section-title {
+  font-family: var(--ff-heading);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  color: var(--clr-secondary);
+  line-height: 1.2;
+  margin-bottom: var(--sp-sm);
+}
+
+.hse-section-desc {
+  font-size: 1rem;
+  color: var(--clr-text-muted);
+  line-height: 1.6;
+}
+
+.hse-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-xl);
+}
+
+.hse-pillar-card {
+  background: #ffffff;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2xl);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.hse-pillar-card:hover {
+  transform: translateY(-4px);
+  border-color: #cbd2d9;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.07);
+}
+
+.hse-pillar-num {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: var(--ff-heading);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: rgba(15, 17, 21, 0.07);
+  line-height: 1;
+}
+
+.hse-pillar-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: rgba(112, 160, 56, 0.12);
+  color: #5a8230;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: var(--sp-lg);
+}
+
+.hse-pillar-title {
+  font-family: var(--ff-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--clr-secondary);
+  line-height: 1.3;
+  margin-bottom: var(--sp-sm);
+}
+
+.hse-pillar-desc {
+  font-size: 0.9rem;
+  color: var(--clr-text-muted);
+  line-height: 1.6;
+  margin-bottom: var(--sp-lg);
+  flex-grow: 1;
+}
+
+.hse-pillar-checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--clr-border);
+  padding-top: var(--sp-md);
+}
+
+.hse-pillar-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.83rem;
+  color: var(--clr-text);
+  line-height: 1.4;
+}
+
+.hse-pillar-checklist li i {
+  color: var(--clr-accent);
+  font-size: 0.85rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Section Protocoles Spécifiques Mines ── */
+.hse-protocols-section {
+  padding: 5rem 0;
+  background: #ffffff;
+  border-top: 1px solid var(--clr-border);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.hse-protocols-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2xl);
+  align-items: center;
+}
+
+.hse-protocols-content h3 {
+  font-family: var(--ff-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--clr-secondary);
+  line-height: 1.2;
+  margin-bottom: var(--sp-md);
+}
+
+.hse-protocols-content p {
+  font-size: 0.95rem;
+  color: var(--clr-text-muted);
+  line-height: 1.6;
+  margin-bottom: var(--sp-xl);
+}
+
+.hse-protocols-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.hse-protocol-item {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: flex-start;
+  padding: var(--sp-md);
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xs);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.hse-protocol-item:hover {
+  border-color: #cbd2d9;
+  background: #fdfdfd;
+}
+
+.hse-protocol-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-xs);
+  background: rgba(158, 42, 43, 0.12);
+  color: var(--clr-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.hse-protocol-title {
+  font-family: var(--ff-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-secondary);
+  margin-bottom: 3px;
+}
+
+.hse-protocol-text {
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+  line-height: 1.5;
+}
+
+/* Right Visual Matrix Card */
+.hse-matrix-card {
+  background: #0f1115;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2xl);
+  color: #ffffff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+.hse-matrix-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(112, 160, 56, 0.2);
+  color: #a4db68;
+  border-radius: var(--radius-xs);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-md);
+}
+
+.hse-matrix-title {
+  font-family: var(--ff-heading);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: var(--sp-sm);
+}
+
+.hse-matrix-desc {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin-bottom: var(--sp-lg);
+}
+
+.hse-matrix-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.hse-matrix-step {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xs);
+}
+
+.hse-matrix-step-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-xs);
+  background: var(--clr-primary);
+  color: #ffffff;
+  font-family: var(--ff-heading);
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hse-matrix-step-content {
+  flex: 1;
+}
+
+.hse-matrix-step-name {
+  font-family: var(--ff-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.hse-matrix-step-desc {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+/* ── Section Téléchargements & Documents d'Audit ── */
+.hse-docs-section {
+  padding: 5rem 0;
+  background: var(--clr-bg);
+}
+
+.hse-docs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-xl);
+}
+
+.hse-doc-card {
+  background: #ffffff;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-xl);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.hse-doc-card:hover {
+  transform: translateY(-3px);
+  border-color: #cbd2d9;
+}
+
+.hse-doc-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-md);
+}
+
+.hse-doc-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-xs);
+  background: rgba(158, 42, 43, 0.1);
+  color: var(--clr-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.hse-doc-info h4 {
+  font-family: var(--ff-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--clr-secondary);
+  line-height: 1.3;
+}
+
+.hse-doc-info span {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+}
+
+.hse-doc-desc {
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+  line-height: 1.5;
+  margin-bottom: var(--sp-lg);
+  flex-grow: 1;
+}
+
+.btn-doc-view {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xs);
+  color: var(--clr-secondary);
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-doc-view:hover {
+  background: var(--clr-secondary);
+  color: #ffffff;
+  border-color: var(--clr-secondary);
+}
+
+/* ── Section Contact Audit & Appel d'Offres ── */
+.hse-audit-section {
+  padding: 5rem 0;
+  background: #ffffff;
+  border-top: 1px solid var(--clr-border);
+}
+
+.hse-audit-card {
+  background: #0f1115;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--sp-2xl);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2xl);
+  align-items: center;
+  color: #ffffff;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+}
+
+.hse-audit-content h3 {
+  font-family: var(--ff-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  margin-bottom: var(--sp-md);
+}
+
+.hse-audit-content p {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin-bottom: var(--sp-xl);
+}
+
+.hse-audit-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.hse-audit-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.hse-audit-contact-item i {
+  color: #a4db68;
+  font-size: 1.1rem;
+}
+
+.hse-audit-form {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+
+.hse-audit-input,
+.hse-audit-select,
+.hse-audit-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  background: #14171e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-xs);
+  color: #ffffff;
+  font-family: var(--ff-body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hse-audit-input:focus,
+.hse-audit-select:focus,
+.hse-audit-textarea:focus {
+  border-color: #a4db68;
+  box-shadow: 0 0 0 3px rgba(112, 160, 56, 0.2);
+}
+
+.btn-hse-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--clr-primary);
+  border: 1px solid var(--clr-primary);
+  border-radius: var(--radius-xs);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.btn-hse-submit:hover {
+  background: var(--clr-primary-dark);
+}
+
+/* ── Modal Document HSE ── */
+.hse-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 17, 21, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-xl);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.hse-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hse-modal-card {
+  background: #14171e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  transform: translateY(20px) scale(0.98);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #ffffff;
+  padding: var(--sp-2xl);
+}
+
+.hse-modal-overlay.active .hse-modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.hse-modal-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hse-modal-close:hover {
+  background: var(--clr-primary);
+  border-color: var(--clr-primary);
+}
+
+/* ── Responsive Rules ── */
+@media (max-width: 1024px) {
+  .hse-trust-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hse-pillars-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hse-protocols-layout {
+    grid-template-columns: 1fr;
+    gap: var(--sp-xl);
+  }
+
+  .hse-docs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hse-audit-card {
+    grid-template-columns: 1fr;
+    gap: var(--sp-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .hse-hero {
+    padding: 3.5rem 0 2.5rem;
+  }
+
+  .hse-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hse-docs-grid {
+    grid-template-columns: 1fr;
+  }
+}
