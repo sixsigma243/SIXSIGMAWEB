@@ -391,8 +391,7 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   position: relative;
-  padding-top: calc(var(--header-h) + var(--sp-3xl));
-  padding-bottom: var(--sp-3xl);
+  padding: 4rem 0 3.5rem;
   background: var(--clr-secondary);
   overflow: hidden;
   color: var(--clr-white);
@@ -454,7 +453,7 @@ button, input, select, textarea {
   letter-spacing: 1.5px;
   padding: 0.45rem 1rem;
   border-radius: var(--radius-sm);
-  margin-bottom: var(--sp-xl);
+  margin-bottom: 1rem;
   border: 1px solid rgba(112, 160, 56, 0.45);
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
@@ -471,7 +470,7 @@ button, input, select, textarea {
   font-weight: 900;
   line-height: 1.12;
   color: var(--clr-white);
-  margin-bottom: var(--sp-lg);
+  margin-bottom: 1rem;
   letter-spacing: -0.5px;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
 }
@@ -497,7 +496,7 @@ button, input, select, textarea {
   font-size: 1.12rem;
   color: rgba(255, 255, 255, 0.92);
   line-height: 1.8;
-  margin-bottom: var(--sp-2xl);
+  margin-bottom: 1.5rem;
   max-width: 680px;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
 }
@@ -507,7 +506,7 @@ button, input, select, textarea {
   align-items: center;
   gap: var(--sp-md);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-3xl);
+  margin-bottom: 1.75rem;
 }
 
 .btn-hero-secondary {
@@ -536,7 +535,7 @@ button, input, select, textarea {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-md);
-  padding: var(--sp-lg);
+  padding: 0.85rem 1.15rem;
   background: rgba(20, 24, 22, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
