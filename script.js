@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
     heroVideoToggle.addEventListener('click', () => {
       if (heroVideo.paused) {
         heroVideo.play().then(() => {
-          heroVideoToggle.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Chantier Kolwezi (Direct)</span>';
+          heroVideoToggle.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Opérations en direct</span>';
         }).catch(() => {});
       } else {
         heroVideo.pause();
