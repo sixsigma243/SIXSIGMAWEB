@@ -586,4 +586,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Raccourci secret d'accès direct pour l'administrateur (Ctrl + Shift + A)
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+      e.preventDefault();
+      window.location.href = 'sixgestion.html';
+    }
+  });
+
 });
