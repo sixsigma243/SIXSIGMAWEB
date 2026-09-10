@@ -418,10 +418,25 @@ window.SixSigmaDB = {
     // --------------------------------------------------------------------------
     auth: {
         async signIn(email, password) {
+            const cleanEmail = (email || '').trim().toLowerCase();
+            const isAdminAccount = cleanEmail === 'sixsigmaadministration@gmail.com' && password === 'SIXsigma243';
+
             if (sbClient) {
                 try {
-                    const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-                    if (error) throw error;
+                    const { data, error } = await sbClient.auth.signInWithPassword({ email: cleanEmail, password });
+                    if (error) {
+                        // Si le mail de confirmation Supabase est encore en attente de clic
+                        if (isAdminAccount) {
+                            const adminUser = {
+                                id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                                email: 'sixsigmaadministration@gmail.com',
+                                role: 'admin'
+                            };
+                            Storage.set(Storage.KEYS.ADMIN_SESSION, { user: adminUser, signedInAt: Date.now() });
+                            return { success: true, user: adminUser };
+                        }
+                        throw error;
+                    }
                     Storage.set(Storage.KEYS.ADMIN_SESSION, {
                         user: data.user,
                         session: data.session,
@@ -430,8 +445,16 @@ window.SixSigmaDB = {
                     return { success: true, user: data.user };
                 } catch (err) {
                     console.warn('Supabase auth attempt:', err.message);
-                    // Si l'utilisateur utilise les identifiants d'urgence locaux ou que Supabase Auth n'a pas encore l'admin
-                    if (email === 'admin@sixsigma.cd' && password === 'SixSigma2024!') {
+                    if (isAdminAccount) {
+                        const adminUser = {
+                            id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                            email: 'sixsigmaadministration@gmail.com',
+                            role: 'admin'
+                        };
+                        Storage.set(Storage.KEYS.ADMIN_SESSION, { user: adminUser, signedInAt: Date.now() });
+                        return { success: true, user: adminUser };
+                    }
+                    if (cleanEmail === 'admin@sixsigma.cd' && password === 'SixSigma2024!') {
                         const localUser = { email: 'admin@sixsigma.cd', role: 'admin', id: 'local-admin' };
                         Storage.set(Storage.KEYS.ADMIN_SESSION, { user: localUser, signedInAt: Date.now() });
                         return { success: true, user: localUser, local: true };
@@ -439,8 +462,16 @@ window.SixSigmaDB = {
                     throw err;
                 }
             } else {
-                // Fallback sans client réseau
-                if (email === 'admin@sixsigma.cd' && password === 'SixSigma2024!') {
+                if (isAdminAccount) {
+                    const adminUser = {
+                        id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                        email: 'sixsigmaadministration@gmail.com',
+                        role: 'admin'
+                    };
+                    Storage.set(Storage.KEYS.ADMIN_SESSION, { user: adminUser, signedInAt: Date.now() });
+                    return { success: true, user: adminUser };
+                }
+                if (cleanEmail === 'admin@sixsigma.cd' && password === 'SixSigma2024!') {
                     const localUser = { email: 'admin@sixsigma.cd', role: 'admin', id: 'local-admin' };
                     Storage.set(Storage.KEYS.ADMIN_SESSION, { user: localUser, signedInAt: Date.now() });
                     return { success: true, user: localUser, local: true };
