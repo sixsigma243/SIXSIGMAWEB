@@ -248,9 +248,9 @@ document.addEventListener('DOMContentLoaded', () => {
         service: data.serviceName,
         description: data.message
       }).then(res => {
-        console.log('Devis enregistré dans Supabase/CMS:', res);
+        // Enregistré avec succès
       }).catch(err => {
-        console.warn('Erreur sauvegarde devis:', err);
+        // Fallback silencieux
       });
     }
   };
