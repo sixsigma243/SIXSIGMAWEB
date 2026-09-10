@@ -512,9 +512,9 @@ document.addEventListener('DOMContentLoaded', () => {
         besoin_operateur: d.operatorReq.includes('Avec opérateur'),
         notes_client: d.notes
       }).then(res => {
-        console.log('Réservation enregistrée dans Supabase/CMS:', res);
+        // Enregistré avec succès
       }).catch(err => {
-        console.warn('Erreur sauvegarde réservation Supabase:', err);
+        // Fallback silencieux
       });
     }
   }

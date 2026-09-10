@@ -12,8 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase JS Client (Local haute disponibilité) -->
+    <script src="supabase.min.js"></script>
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
@@ -45,7 +45,7 @@
                 </a>
                 <div id="userProfileBadge" class="user-profile-badge" style="display: none;">
                     <div class="user-avatar">A</div>
-                    <span id="userEmailDisplay" class="user-email">admin@sixsigma.cd</span>
+                    <span id="userEmailDisplay" class="user-email">Admin</span>
                     <button id="btnLogout" class="btn-logout" title="Se déconnecter">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -77,7 +77,7 @@
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                             <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
-                        <input type="email" id="loginEmail" value="sixsigmaadministration@gmail.com" placeholder="sixsigmaadministration@gmail.com" required autofocus>
+                        <input type="email" id="loginEmail" placeholder="nom@domaine.cd" required autofocus>
                     </div>
                 </div>
 
@@ -102,7 +102,7 @@
 
                 <div class="login-footer-hint">
                     <span class="security-dot"></span>
-                    <span>Session sécurisée rattachée à Supabase</span>
+                    <span>Session chiffrée SSL / TLS</span>
                 </div>
             </form>
         </div>
@@ -112,13 +112,13 @@
     <main id="dashboardView" class="admin-dashboard-view" style="display: none;">
         <div class="admin-container">
 
-            <!-- BANNIÈRE D'ÉTAT SUPABASE & SYNCHRONISATION -->
+            <!-- BANNIÈRE D'ÉTAT & SYNCHRONISATION -->
             <div id="supabaseStatusBanner" class="supabase-status-banner">
                 <div class="status-indicator-box">
                     <span class="status-beacon live"></span>
                     <div>
-                        <strong id="supabaseStatusText">Supabase Connecté</strong>
-                        <span class="status-subtext">yvryglqqpjhzelfqwlrp.supabase.co</span>
+                        <strong id="supabaseStatusText">Base de Données Active</strong>
+                        <span class="status-subtext">Synchronisation temps réel</span>
                     </div>
                 </div>
                 <div class="status-actions">
@@ -493,21 +493,18 @@
     </div>
 
     <!-- ============================================================== -->
-    <!-- MODALE : SCRIPT D'INITIALISATION SQL SUPABASE -->
+    <!-- MODALE : SCRIPT D'INITIALISATION SQL -->
     <!-- ============================================================== -->
     <div id="sqlModal" class="admin-modal" style="display: none;">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Script SQL d'Initialisation Supabase</h3>
+                    <h3>Script SQL d'Initialisation des Données</h3>
                     <button class="modal-close-btn" data-close-modal="sqlModal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <p class="modal-info-text">
-                        Copiez ce script et collez-le dans votre éditeur SQL Supabase : 
-                        <a href="https://supabase.com/dashboard/project/yvryglqqpjhzelfqwlrp/sql/new" target="_blank" class="link-supabase">
-                            Ouvrir l'éditeur SQL de votre projet yvryglqqpjhzelfqwlrp ↗
-                        </a>
+                        Schéma SQL complet pour l'initialisation des tables PostgreSQL (engins, chantiers, devis, réservations) :
                     </p>
                     <div class="sql-code-container">
                         <pre id="sqlCodeBlock"><code>-- Chargement du script SQL...</code></pre>
