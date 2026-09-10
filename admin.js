@@ -260,7 +260,7 @@ function initAdminPortal() {
 
             card.innerHTML = `
                 <div class="machine-card-media">
-                    <img src="${eq.image_url}" alt="${eq.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=600&q=80'">
+                    <img src="${eq.image_url}" alt="${eq.name}" loading="lazy" onerror="this.src='projet-genie-civil-minier.png'">
                     <span class="machine-card-cat">${categoryLabels[eq.category] || eq.category}</span>
                 </div>
                 <div class="machine-card-body">
