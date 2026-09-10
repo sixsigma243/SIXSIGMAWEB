@@ -53,16 +53,29 @@
       <!-- Desktop Nav -->
       <nav class="nav">
         <ul class="nav-links">
-          <li><a href="index.html" class="nav-link">Accueil</a></li>
-          <li><a href="index.html#services" class="nav-link">Services</a></li>
-          <li><a href="parc-materiel.html" class="nav-link active">Parc Matériel</a></li>
-          <li><a href="index.html#realisations" class="nav-link">Réalisations</a></li>
-          <li><a href="hse.html" class="nav-link">Charte HSE</a></li>
-          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="index.html" class="nav-link" data-i18n="nav_home">Accueil</a></li>
+          <li><a href="index.html#services" class="nav-link" data-i18n="nav_services">Services</a></li>
+          <li><a href="parc-materiel.html" class="nav-link active" data-i18n="nav_fleet">Parc Matériel</a></li>
+          <li><a href="index.html#realisations" class="nav-link" data-i18n="nav_projects">Réalisations</a></li>
+          <li><a href="hse.html" class="nav-link" data-i18n="nav_hse">Charte HSE</a></li>
+          <li><a href="index.html#contact" class="nav-link" data-i18n="nav_contact">Contact</a></li>
         </ul>
+
+        <!-- Sélecteur de Langue -->
+        <div class="lang-switch" aria-label="Sélecteur de langue">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+
+        <!-- Accès Portail Client ERP -->
+        <a href="http://localhost:3001" target="_blank" rel="noopener" class="btn-erp" title="Accès Sécurisé Espace Client ERP">
+          <i class="fa-solid fa-lock"></i>
+          <span data-i18n="btn_erp">Portail Client ERP</span>
+        </a>
+
         <a href="#reservation" class="btn btn-primary">
           <i class="fa-solid fa-bolt"></i>
-          Réserver un engin
+          <span data-i18n="nav_quote_btn">Réserver un engin</span>
         </a>
       </nav>
 
@@ -84,17 +97,29 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
+
+    <div style="display: flex; gap: 8px; align-items: center; padding: 0 var(--sp-lg); margin-bottom: var(--sp-md);">
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <a href="http://localhost:3001" target="_blank" rel="noopener" class="btn-erp" style="flex: 1; justify-content: center;">
+        <i class="fa-solid fa-lock"></i>
+        <span data-i18n="btn_erp">Portail Client ERP</span>
+      </a>
+    </div>
+
     <nav class="mobile-menu-links">
-      <a href="index.html" class="nav-link">Accueil</a>
-      <a href="index.html#services" class="nav-link">Services</a>
-      <a href="parc-materiel.html" class="nav-link active">Parc Matériel</a>
-      <a href="index.html#realisations" class="nav-link">Réalisations</a>
-      <a href="hse.html" class="nav-link">Charte HSE</a>
-      <a href="index.html#contact" class="nav-link">Contact</a>
+      <a href="index.html" class="nav-link" data-i18n="nav_home">Accueil</a>
+      <a href="index.html#services" class="nav-link" data-i18n="nav_services">Services</a>
+      <a href="parc-materiel.html" class="nav-link active" data-i18n="nav_fleet">Parc Matériel</a>
+      <a href="index.html#realisations" class="nav-link" data-i18n="nav_projects">Réalisations</a>
+      <a href="hse.html" class="nav-link" data-i18n="nav_hse">Charte HSE</a>
+      <a href="index.html#contact" class="nav-link" data-i18n="nav_contact">Contact</a>
     </nav>
     <a href="#reservation" class="btn btn-primary btn-lg" style="margin-top: auto;">
       <i class="fa-solid fa-bolt"></i>
-      Réserver un engin
+      <span data-i18n="nav_quote_btn">Réserver un engin</span>
     </a>
   </div>
 
@@ -107,12 +132,12 @@
         <div class="fleet-hero-content">
           <div class="fleet-hero-badge">
             <i class="fa-solid fa-truck-monster"></i>
-            Flotte Industrielle & Minière • Disponibilité Immédiate
+            <span data-i18n="fleet_hero_badge">Flotte Industrielle &amp; Minière • Disponibilité Immédiate</span>
           </div>
-          <h1 class="fleet-hero-title">
-            Parc Matériel & Engins Lourds Haute Performance
+          <h1 class="fleet-hero-title" data-i18n="fleet_hero_title">
+            Parc Matériel &amp; Engins Lourds Haute Performance
           </h1>
-          <p class="fleet-hero-subtitle">
+          <p class="fleet-hero-subtitle" data-i18n="fleet_hero_subtitle">
             Pelles d'extraction, dumpers articulés, niveleuses, bulldozers et générateurs industriels forte puissance. Flotte certifiée, rigoureusement entretenue et prête à la mobilisation sous 24 à 48 heures.
           </p>
 
@@ -1100,6 +1125,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
   <script src="parc-materiel.js"></script>
 </body>

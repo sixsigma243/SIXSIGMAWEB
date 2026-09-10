@@ -53,13 +53,26 @@
       <!-- Desktop Nav -->
       <nav class="nav">
         <ul class="nav-links">
-          <li><a href="index.html" class="nav-link">Accueil</a></li>
-          <li><a href="index.html#services" class="nav-link">Services</a></li>
-          <li><a href="parc-materiel.html" class="nav-link">Parc Matériel</a></li>
-          <li><a href="index.html#realisations" class="nav-link">Réalisations</a></li>
-          <li><a href="hse.html" class="nav-link active">Charte HSE</a></li>
-          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+          <li><a href="index.html" class="nav-link" data-i18n="nav_home">Accueil</a></li>
+          <li><a href="index.html#services" class="nav-link" data-i18n="nav_services">Services</a></li>
+          <li><a href="parc-materiel.html" class="nav-link" data-i18n="nav_fleet">Parc Matériel</a></li>
+          <li><a href="index.html#realisations" class="nav-link" data-i18n="nav_projects">Réalisations</a></li>
+          <li><a href="hse.html" class="nav-link active" data-i18n="nav_hse">Charte HSE</a></li>
+          <li><a href="index.html#contact" class="nav-link" data-i18n="nav_contact">Contact</a></li>
         </ul>
+
+        <!-- Sélecteur de Langue -->
+        <div class="lang-switch" aria-label="Sélecteur de langue">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+
+        <!-- Accès Portail Client ERP -->
+        <a href="http://localhost:3001" target="_blank" rel="noopener" class="btn-erp" title="Accès Sécurisé Espace Client ERP">
+          <i class="fa-solid fa-lock"></i>
+          <span data-i18n="btn_erp">Portail Client ERP</span>
+        </a>
+
         <a href="#audit" class="btn btn-primary">
           <i class="fa-solid fa-shield-halved"></i>
           Dossier d'Audit
@@ -84,13 +97,25 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
+
+    <div style="display: flex; gap: 8px; align-items: center; padding: 0 var(--sp-lg); margin-bottom: var(--sp-md);">
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <a href="http://localhost:3001" target="_blank" rel="noopener" class="btn-erp" style="flex: 1; justify-content: center;">
+        <i class="fa-solid fa-lock"></i>
+        <span data-i18n="btn_erp">Portail Client ERP</span>
+      </a>
+    </div>
+
     <nav class="mobile-menu-links">
-      <a href="index.html" class="nav-link">Accueil</a>
-      <a href="index.html#services" class="nav-link">Services</a>
-      <a href="parc-materiel.html" class="nav-link">Parc Matériel</a>
-      <a href="index.html#realisations" class="nav-link">Réalisations</a>
-      <a href="hse.html" class="nav-link active">Charte HSE</a>
-      <a href="index.html#contact" class="nav-link">Contact</a>
+      <a href="index.html" class="nav-link" data-i18n="nav_home">Accueil</a>
+      <a href="index.html#services" class="nav-link" data-i18n="nav_services">Services</a>
+      <a href="parc-materiel.html" class="nav-link" data-i18n="nav_fleet">Parc Matériel</a>
+      <a href="index.html#realisations" class="nav-link" data-i18n="nav_projects">Réalisations</a>
+      <a href="hse.html" class="nav-link active" data-i18n="nav_hse">Charte HSE</a>
+      <a href="index.html#contact" class="nav-link" data-i18n="nav_contact">Contact</a>
     </nav>
     <a href="#audit" class="btn btn-primary btn-lg" style="margin-top: auto;">
       <i class="fa-solid fa-shield-halved"></i>
@@ -107,12 +132,12 @@
         <div class="hse-hero-content">
           <div class="hse-hero-badge">
             <i class="fa-solid fa-shield-heart"></i>
-            Engagement Institutionnel • Zéro Compromis
+            <span data-i18n="hse_hero_badge">Engagement Institutionnel • Zéro Compromis</span>
           </div>
-          <h1 class="hse-hero-title">
+          <h1 class="hse-hero-title" data-i18n="hse_hero_title">
             Politique HSE, Intégrité Humaine &amp; Sécurité Opérationnelle
           </h1>
-          <p class="hse-hero-subtitle">
+          <p class="hse-hero-subtitle" data-i18n="hse_hero_subtitle">
             Sur chaque chantier minier et industriel, la vie humaine et la préservation de l'environnement prévalent sur toute autre considération. Notre engagement : Objectif Zéro Accident et respect des normes internationales les plus strictes.
           </p>
 
@@ -667,6 +692,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
   <script src="hse.js"></script>
 </body>

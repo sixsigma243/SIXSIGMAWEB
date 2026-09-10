@@ -309,6 +309,75 @@ button, input, select, textarea {
   background: rgba(158, 42, 43, 0.06);
 }
 
+/* ── Sélecteur de Langue (FR / EN) ── */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xs);
+  padding: 2px;
+  gap: 2px;
+}
+
+.lang-btn {
+  padding: 4px 8px;
+  font-family: var(--ff-heading);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--clr-text-muted);
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.lang-btn:hover {
+  color: var(--clr-secondary);
+}
+
+.lang-btn.active {
+  background: var(--clr-secondary);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Bouton Accès Portail ERP Client ── */
+.btn-erp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0.55rem 0.95rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--ff-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--clr-secondary);
+  background: rgba(15, 17, 21, 0.04);
+  border: 1px solid rgba(15, 17, 21, 0.14);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all var(--transition);
+}
+
+.btn-erp:hover {
+  background: var(--clr-secondary);
+  color: #ffffff;
+  border-color: var(--clr-secondary);
+  transform: translateY(-1px);
+}
+
+.btn-erp i {
+  font-size: 0.75rem;
+  color: var(--clr-primary);
+  transition: color var(--transition);
+}
+
+.btn-erp:hover i {
+  color: #ff9b9d;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -2255,7 +2324,9 @@ button, input, select, textarea {
 
   /* Header */
   .nav-links,
-  .nav .btn {
+  .nav .btn,
+  .nav .lang-switch,
+  .nav .btn-erp {
     display: none;
   }
 

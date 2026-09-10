@@ -109,16 +109,29 @@
       <!-- Desktop Nav -->
       <nav class="nav">
         <ul class="nav-links">
-          <li><a href="#services" class="nav-link">Services</a></li>
-          <li><a href="parc-materiel.html" class="nav-link">Parc Matériel</a></li>
-          <li><a href="#realisations" class="nav-link">Réalisations</a></li>
-          <li><a href="hse.html" class="nav-link">Charte HSE</a></li>
-          <li><a href="#valeurs" class="nav-link">À propos</a></li>
-          <li><a href="#contact" class="nav-link">Contact</a></li>
+          <li><a href="#services" class="nav-link" data-i18n="nav_services">Services</a></li>
+          <li><a href="parc-materiel.html" class="nav-link" data-i18n="nav_fleet">Parc Matériel</a></li>
+          <li><a href="#realisations" class="nav-link" data-i18n="nav_projects">Réalisations</a></li>
+          <li><a href="hse.html" class="nav-link" data-i18n="nav_hse">Charte HSE</a></li>
+          <li><a href="#valeurs" class="nav-link" data-i18n="nav_about">À propos</a></li>
+          <li><a href="#contact" class="nav-link" data-i18n="nav_contact">Contact</a></li>
         </ul>
+
+        <!-- Sélecteur de Langue -->
+        <div class="lang-switch" aria-label="Sélecteur de langue">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+
+        <!-- Accès Portail Client ERP -->
+        <a href="http://localhost:3001" target="_blank" rel="noopener" class="btn-erp" title="Accès Sécurisé Espace Client ERP">
+          <i class="fa-solid fa-lock"></i>
+          <span data-i18n="btn_erp">Portail Client ERP</span>
+        </a>
+
         <a href="#contact" class="btn btn-primary">
           <i class="fa-solid fa-bolt"></i>
-          Devis Express
+          <span data-i18n="nav_quote_btn">Devis Express</span>
         </a>
       </nav>
 
@@ -140,17 +153,29 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
+
+    <div style="display: flex; gap: 8px; align-items: center; padding: 0 var(--sp-lg); margin-bottom: var(--sp-md);">
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="fr">FR</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <a href="http://localhost:3001" target="_blank" rel="noopener" class="btn-erp" style="flex: 1; justify-content: center;">
+        <i class="fa-solid fa-lock"></i>
+        <span data-i18n="btn_erp">Portail Client ERP</span>
+      </a>
+    </div>
+
     <nav class="mobile-menu-links">
-      <a href="#services" class="nav-link">Services</a>
-      <a href="parc-materiel.html" class="nav-link">Parc Matériel</a>
-      <a href="#realisations" class="nav-link">Réalisations</a>
-      <a href="hse.html" class="nav-link">Charte HSE</a>
-      <a href="#valeurs" class="nav-link">À propos</a>
-      <a href="#contact" class="nav-link">Contact</a>
+      <a href="#services" class="nav-link" data-i18n="nav_services">Services</a>
+      <a href="parc-materiel.html" class="nav-link" data-i18n="nav_fleet">Parc Matériel</a>
+      <a href="#realisations" class="nav-link" data-i18n="nav_projects">Réalisations</a>
+      <a href="hse.html" class="nav-link" data-i18n="nav_hse">Charte HSE</a>
+      <a href="#valeurs" class="nav-link" data-i18n="nav_about">À propos</a>
+      <a href="#contact" class="nav-link" data-i18n="nav_contact">Contact</a>
     </nav>
     <a href="#contact" class="btn btn-primary btn-lg" style="margin-top: auto;">
       <i class="fa-solid fa-bolt"></i>
-      Devis Express
+      <span data-i18n="nav_quote_btn">Devis Express</span>
     </a>
   </div>
 
@@ -179,16 +204,16 @@
         <!-- Badge -->
         <div class="hero-badge reveal">
           <i class="fa-solid fa-shield-halved"></i>
-          Génie Civil Industriel, Minier &amp; BTP
+          <span data-i18n="hero_badge">Génie Civil Industriel, Minier &amp; BTP</span>
         </div>
 
         <!-- Title -->
-        <h1 class="hero-title reveal reveal-delay-1">
+        <h1 class="hero-title reveal reveal-delay-1" data-i18n="hero_title">
           Génie Civil Minier &amp; Construction Métallique
         </h1>
 
         <!-- Subtitle -->
-        <p class="hero-subtitle reveal reveal-delay-2">
+        <p class="hero-subtitle reveal reveal-delay-2" data-i18n="hero_subtitle">
           SIX SIGMA conçoit, bâtit et livre vos infrastructures lourdes où que vos chantiers l'exigent. Flotte d'engins mobilisable sous 24-48h et équipes d'ingénieurs certifiées HSE pour tous vos projets d'envergure.
         </p>
 
@@ -196,11 +221,11 @@
         <div class="hero-actions reveal reveal-delay-3">
           <a href="#contact" class="btn btn-primary btn-lg">
             <i class="fa-solid fa-file-lines"></i>
-            Demander une cotation
+            <span data-i18n="hero_cta_quote">Demander une cotation</span>
           </a>
           <a href="#services" class="btn btn-secondary btn-lg btn-hero-secondary">
             <i class="fa-solid fa-cubes"></i>
-            Découvrir nos expertises
+            <span data-i18n="hero_cta_services">Découvrir nos expertises</span>
           </a>
         </div>
 
@@ -211,8 +236,8 @@
               <i class="fa-solid fa-truck-monster"></i>
             </div>
             <div class="trust-text">
-              <strong>Mobilisation 24-48h</strong>
-              <span>Flotte lourde &amp; engins de terrassement</span>
+              <strong data-i18n="trust_mob_val">Mobilisation 24-48h</strong>
+              <span data-i18n="trust_mob_lbl">Flotte lourde &amp; engins de terrassement</span>
             </div>
           </div>
           <div class="trust-item">
@@ -220,8 +245,8 @@
               <i class="fa-solid fa-shield-heart"></i>
             </div>
             <div class="trust-text">
-              <strong>Normes HSE Internationales</strong>
-              <span>Zéro compromis sur la sécurité terrain</span>
+              <strong data-i18n="trust_hse_val">Normes HSE Internationales</strong>
+              <span data-i18n="trust_hse_lbl">Zéro compromis sur la sécurité terrain</span>
             </div>
           </div>
           <div class="trust-item">
@@ -852,6 +877,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
