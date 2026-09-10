@@ -343,41 +343,6 @@ button, input, select, textarea {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* ── Bouton Accès Portail ERP Client ── */
-.btn-erp {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 0.55rem 0.95rem;
-  border-radius: var(--radius-sm);
-  font-family: var(--ff-heading);
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--clr-secondary);
-  background: rgba(15, 17, 21, 0.04);
-  border: 1px solid rgba(15, 17, 21, 0.14);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: all var(--transition);
-}
-
-.btn-erp:hover {
-  background: var(--clr-secondary);
-  color: #ffffff;
-  border-color: var(--clr-secondary);
-  transform: translateY(-1px);
-}
-
-.btn-erp i {
-  font-size: 0.75rem;
-  color: var(--clr-primary);
-  transition: color var(--transition);
-}
-
-.btn-erp:hover i {
-  color: #ff9b9d;
-}
-
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -2325,8 +2290,7 @@ button, input, select, textarea {
   /* Header */
   .nav-links,
   .nav .btn,
-  .nav .lang-switch,
-  .nav .btn-erp {
+  .nav .lang-switch {
     display: none;
   }
 

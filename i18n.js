@@ -14,7 +14,6 @@ const TRANSLATIONS = {
     nav_about: 'À propos',
     nav_contact: 'Contact',
     nav_quote_btn: 'Devis Express',
-    btn_erp: 'Portail Client ERP',
 
     // Hero Home
     hero_badge: 'Génie Civil Industriel, Minier & BTP',
@@ -80,7 +79,6 @@ const TRANSLATIONS = {
     nav_about: 'About Us',
     nav_contact: 'Contact',
     nav_quote_btn: 'Fast Quote',
-    btn_erp: 'Client ERP Portal',
 
     // Hero Home
     hero_badge: 'Industrial, Mining & Civil Engineering',
