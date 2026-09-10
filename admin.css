@@ -167,18 +167,42 @@ body.admin-body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-    background: radial-gradient(circle at center, rgba(158, 42, 43, 0.08) 0%, transparent 65%);
+    padding: 3rem 1.5rem;
+    background: radial-gradient(circle at center, rgba(158, 42, 43, 0.12) 0%, rgba(10, 12, 16, 0.98) 70%);
 }
 
 .login-card {
-    background: var(--admin-surface);
-    border: 1px solid var(--admin-border);
-    border-radius: 12px;
+    background: rgba(18, 22, 31, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
     width: 100%;
-    max-width: 440px;
-    padding: 2.5rem;
-    box-shadow: var(--admin-shadow);
+    max-width: 460px;
+    padding: 2.75rem 2.25rem;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #9e2a2b, #ff6b6d, #9e2a2b);
+}
+
+@keyframes loginShake {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-8px); }
+    30%, 60%, 90% { transform: translateX(8px); }
+}
+
+.login-card.shake {
+    animation: loginShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 .login-header {
@@ -187,24 +211,199 @@ body.admin-body {
 }
 
 .login-logo {
-    height: 48px;
+    height: 52px;
+    width: auto;
     margin-bottom: 1.25rem;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+.login-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(158, 42, 43, 0.15);
+    border: 1px solid rgba(158, 42, 43, 0.35);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ff8587;
+    letter-spacing: 0.03em;
 }
 
 .login-header h2 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.65rem;
+    font-weight: 700;
     color: var(--admin-text);
     margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
 }
 
 .login-header p {
     font-size: 0.88rem;
     color: var(--admin-text-muted);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
+/* CARTE REPRISE DE SESSION */
+.existing-session-banner {
+    background: rgba(24, 29, 40, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.existing-session-header {
+    margin-bottom: 1rem;
+}
+
+.existing-user-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.existing-user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--admin-crimson), #c0392b);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 0 12px rgba(158, 42, 43, 0.4);
+}
+
+.existing-user-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.existing-user-label {
+    font-size: 0.7rem;
+    color: var(--admin-green);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.existing-user-email {
+    font-size: 0.92rem;
+    color: var(--admin-text);
+    word-break: break-all;
+}
+
+.existing-session-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.btn-resume-session {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, var(--admin-crimson), #822223);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    transition: all 0.2s ease;
+}
+
+.btn-resume-session:hover {
+    background: linear-gradient(135deg, var(--admin-crimson-hover), #9e2a2b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(158, 42, 43, 0.4);
+}
+
+.btn-switch-account {
+    background: transparent;
+    border: none;
+    color: var(--admin-text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: center;
+    padding: 0.3rem;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.btn-switch-account:hover {
+    color: var(--admin-text);
+}
+
+.existing-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin-top: 1.25rem;
+}
+
+.existing-divider::before,
+.existing-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--admin-border);
+}
+
+.existing-divider span {
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+    color: var(--admin-text-muted);
+    text-transform: uppercase;
+}
+
+/* ALERTES FORMULAIRE */
+.admin-alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.4;
+    animation: fadeIn 0.25s ease;
+}
+
+.admin-alert.error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+}
+
+.admin-alert.error .alert-icon {
+    color: #ef4444;
+    flex-shrink: 0;
+}
+
+.admin-alert.success {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #86efac;
+}
+
+.admin-alert.success .alert-icon {
+    color: #22c55e;
+    flex-shrink: 0;
+}
+
+/* FORMULAIRE & CHAMPS */
 .login-form .form-group {
     margin-bottom: 1.25rem;
 }
@@ -214,7 +413,7 @@ body.admin-body {
     font-size: 0.85rem;
     font-weight: 500;
     color: var(--admin-text);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.45rem;
 }
 
 .input-with-icon {
@@ -223,37 +422,143 @@ body.admin-body {
     align-items: center;
 }
 
-.input-with-icon svg {
+.input-with-icon .field-icon {
     position: absolute;
-    left: 0.9rem;
+    left: 0.95rem;
     color: var(--admin-text-muted);
     pointer-events: none;
+    transition: color 0.2s;
 }
 
 .input-with-icon input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.6rem;
+    padding: 0.8rem 1rem 0.8rem 2.75rem;
     background: var(--admin-bg);
     border: 1px solid var(--admin-border);
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--admin-text);
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+    font-family: inherit;
     transition: all 0.2s ease;
 }
 
 .input-with-icon input:focus {
     outline: none;
     border-color: var(--admin-crimson);
-    box-shadow: 0 0 0 3px rgba(158, 42, 43, 0.2);
+    background: #0f131a;
+    box-shadow: 0 0 0 3px rgba(158, 42, 43, 0.25);
 }
 
+.input-with-icon input:focus + .field-icon,
+.input-with-icon input:focus ~ .field-icon {
+    color: var(--admin-text);
+}
+
+/* BASCULE MOT DE PASSE (OEIL) */
+.input-password-wrapper input {
+    padding-right: 2.75rem;
+}
+
+.btn-toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--admin-text-muted);
+    cursor: pointer;
+    padding: 0.35rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s, background 0.2s;
+}
+
+.btn-toggle-password:hover {
+    color: var(--admin-text);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* UTILITAIRES FORMULAIRE (REMEMBER ME) */
+.form-utilities-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1.25rem 0 1.5rem 0;
+}
+
+.custom-checkbox-container {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    font-size: 0.83rem;
+    user-select: none;
+    color: var(--admin-text-muted);
+    gap: 0.5rem;
+}
+
+.custom-checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox-box {
+    height: 18px;
+    width: 18px;
+    background-color: var(--admin-bg);
+    border: 1px solid var(--admin-border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox-container:hover input ~ .custom-checkbox-box {
+    border-color: var(--admin-crimson);
+}
+
+.custom-checkbox-container input:checked ~ .custom-checkbox-box {
+    background-color: var(--admin-crimson);
+    border-color: var(--admin-crimson);
+}
+
+.custom-checkbox-box::after {
+    content: '';
+    display: none;
+    width: 5px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.custom-checkbox-container input:checked ~ .custom-checkbox-box::after {
+    display: block;
+}
+
+.auth-security-tag {
+    font-size: 0.74rem;
+    color: var(--admin-text-muted);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* BOUTON DE SOUMISSION AVEC ÉTATS */
 .btn-login-submit {
     width: 100%;
-    padding: 0.85rem;
-    background: var(--admin-crimson);
+    padding: 0.95rem;
+    background: linear-gradient(135deg, var(--admin-crimson), #832021);
     color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-family: 'Outfit', sans-serif;
     font-size: 1rem;
     font-weight: 600;
@@ -261,15 +566,49 @@ body.admin-body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.6rem;
-    transition: all 0.2s ease;
-    margin-top: 1.5rem;
+    gap: 0.65rem;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(158, 42, 43, 0.35);
 }
 
-.btn-login-submit:hover {
-    background: var(--admin-crimson-hover);
+.btn-login-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--admin-crimson-hover), #9e2a2b);
     transform: translateY(-1px);
-    box-shadow: var(--admin-glow);
+    box-shadow: 0 6px 20px rgba(158, 42, 43, 0.5);
+}
+
+.btn-login-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-login-submit:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.btn-login-submit.is-loading {
+    background: #1f2533;
+    border: 1px solid var(--admin-border);
+    box-shadow: none;
+    color: var(--admin-text);
+}
+
+.btn-login-submit.is-success {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+}
+
+.btn-login-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .login-footer-hint {
@@ -277,17 +616,21 @@ body.admin-body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1.5rem;
+    margin-top: 1.75rem;
     font-size: 0.78rem;
     color: var(--admin-text-muted);
 }
 
 .security-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     background: var(--admin-green);
     border-radius: 50%;
     box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+.security-dot.live {
+    animation: beaconPulse 2s infinite;
 }
 
 /* DASHBOARD PRINCIPAL */
