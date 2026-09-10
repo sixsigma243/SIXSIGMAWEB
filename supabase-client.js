@@ -684,14 +684,16 @@ window.SixSigmaDB = {
         },
 
         async create(projectData) {
+            const newId = projectData.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'proj-' + Date.now());
             const newProj = {
-                id: projectData.id || 'proj-' + Date.now(),
+                id: newId,
                 title: projectData.title,
                 category: projectData.category || 'Génie Civil Minier',
                 client: projectData.client || '',
                 location: projectData.location || 'RDC',
                 completion_date: projectData.completion_date || '2024',
                 image_url: projectData.image_url || 'projet-genie-civil-minier.png',
+                video_url: projectData.video_url || null,
                 description: projectData.description || '',
                 metrics: projectData.metrics || {},
                 is_featured: projectData.is_featured !== false,
@@ -705,7 +707,15 @@ window.SixSigmaDB = {
 
             if (sbClient) {
                 try {
-                    await sbClient.from('chantiers_realisations').insert([newProj]);
+                    const { data, error } = await sbClient.from('chantiers_realisations').insert([newProj]).select();
+                    if (error) {
+                        console.warn('Supabase project insert error:', error.message);
+                    } else if (data && data[0]) {
+                        // Mettre à jour avec l'enregistrement officiel retourné par Supabase
+                        localList[0] = data[0];
+                        Storage.set(Storage.KEYS.PROJECTS, localList);
+                        return data[0];
+                    }
                 } catch (e) {
                     console.warn('Supabase project insert failed:', e);
                 }
@@ -874,6 +884,108 @@ window.SixSigmaDB = {
                 } catch (e) {}
             }
             return item;
+        }
+    },
+
+    // --------------------------------------------------------------------------
+    // 6. GESTION SUPABASE STORAGE (PHOTOS & VIDÉOS MP4)
+    // --------------------------------------------------------------------------
+    storage: {
+        bucketName: 'sixsigma-media',
+
+        /**
+         * Téléverse un fichier (image ou vidéo MP4/WebM) dans le bucket public sixsigma-media
+         * et retourne son URL publique exploitable en direct.
+         */
+        async upload(file, customPath) {
+            if (!file) throw new Error('Aucun fichier fourni pour le téléversement.');
+
+            const cleanFileName = (file.name || 'media').replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = customPath || `${Date.now()}_${cleanFileName}`;
+
+            if (sbClient) {
+                try {
+                    const { data, error } = await sbClient.storage
+                        .from(this.bucketName)
+                        .upload(path, file, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+
+                    if (error) {
+                        console.warn('Erreur Supabase Storage upload:', error.message);
+                        throw error;
+                    }
+
+                    const { data: urlData } = sbClient.storage
+                        .from(this.bucketName)
+                        .getPublicUrl(path);
+
+                    const publicUrl = urlData?.publicUrl || `${SUPABASE_CONFIG.url}/storage/v1/object/public/${this.bucketName}/${path}`;
+                    return {
+                        success: true,
+                        path: path,
+                        url: publicUrl
+                    };
+                } catch (err) {
+                    console.error('Échec upload Supabase Storage:', err);
+                    throw err;
+                }
+            }
+
+            throw new Error('Client Supabase non connecté.');
+        },
+
+        getPublicUrl(path) {
+            if (!path) return '';
+            if (path.startsWith('http://') || path.startsWith('https://')) return path;
+            if (sbClient) {
+                const { data } = sbClient.storage.from(this.bucketName).getPublicUrl(path);
+                if (data && data.publicUrl) return data.publicUrl;
+            }
+            return `${SUPABASE_CONFIG.url}/storage/v1/object/public/${this.bucketName}/${path}`;
+        }
+    },
+
+    // --------------------------------------------------------------------------
+    // 7. PARAMÈTRES DU SITE (SITE SETTINGS / HERO VIDEO)
+    // --------------------------------------------------------------------------
+    settings: {
+        async get(key, defaultVal = null) {
+            if (sbClient) {
+                try {
+                    const { data, error } = await sbClient
+                        .from('site_settings')
+                        .select('value')
+                        .eq('key', key)
+                        .maybeSingle();
+                    if (!error && data && data.value) {
+                        localStorage.setItem(`sixsigma_setting_${key}`, data.value);
+                        return data.value;
+                    }
+                } catch (e) {
+                    console.info('Settings get fallback:', e.message);
+                }
+            }
+            return localStorage.getItem(`sixsigma_setting_${key}`) || defaultVal;
+        },
+
+        async set(key, value) {
+            localStorage.setItem(`sixsigma_setting_${key}`, value);
+            if (sbClient) {
+                try {
+                    await sbClient
+                        .from('site_settings')
+                        .upsert({
+                            key: key,
+                            value: String(value),
+                            updated_at: new Date().toISOString()
+                        });
+                } catch (e) {
+                    console.warn('Settings set Supabase failed, stored locally:', e);
+                }
+            }
+            return { success: true, key, value };
         }
     }
 };

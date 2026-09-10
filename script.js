@@ -420,10 +420,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── PROJECT DETAIL MODAL ──
+  // ── PROJECT DETAIL MODAL & DYNAMIC SUPABASE HYDRATION ──
   const projectData = {
     'genie-civil': {
       img: 'projet-genie-civil-minier.png',
+      video: null,
       title: 'Plateforme Minière & Terrassement de Grande Envergure',
       location: 'Site Minier Industriel, RDC',
       badges: [
@@ -443,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     'construction-metallique': {
       img: 'projet-construction-metallique.png',
+      video: null,
       title: 'Complexe Industriel & Charpente Métallique Grande Portée',
       location: 'Zone Industrielle & Logistique',
       badges: [
@@ -462,6 +464,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const getCategoryIcon = (category) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('minier') || cat.includes('terrassement')) return 'fa-mountain-sun';
+    if (cat.includes('méta') || cat.includes('industriel') || cat.includes('hangar')) return 'fa-industry';
+    if (cat.includes('route') || cat.includes('voirie')) return 'fa-road';
+    if (cat.includes('bureau') || cat.includes('étude')) return 'fa-compass-drafting';
+    return 'fa-helmet-safety';
+  };
+
+  const getServiceSlug = (category) => {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('méta')) return 'construction-metallique';
+    if (cat.includes('locat') || cat.includes('engin')) return 'location-equipements';
+    if (cat.includes('assainiss') || cat.includes('drainage')) return 'assainissement';
+    return 'genie-civil';
+  };
+
+  const parseProjectMetrics = (metrics) => {
+    if (!metrics) return [];
+    if (Array.isArray(metrics)) return metrics;
+    const stats = [];
+    if (typeof metrics === 'object') {
+      for (const [k, v] of Object.entries(metrics)) {
+        if (!v) continue;
+        let label = k;
+        if (k === 'volume_terrassement' || k === 'metrique1') label = 'Terrassement';
+        else if (k === 'duree' || k === 'metrique2') label = 'Délai';
+        else if (k === 'zero_lti' || k === 'metrique3') label = 'Sécurité';
+        else if (k === 'acier_monte') label = 'Structure Acier';
+        else if (k === 'superficie') label = 'Superficie';
+        else if (k === 'pont_roulant') label = 'Équipement';
+        stats.push({ value: String(v), label: label });
+      }
+    }
+    return stats;
+  };
+
   const modalOverlay = document.getElementById('project-modal-overlay');
   const modalClose = document.getElementById('modal-close');
 
@@ -469,9 +508,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = projectData[projectKey];
     if (!data || !modalOverlay) return;
 
-    // Fill modal
-    document.getElementById('modal-img').src = data.img;
-    document.getElementById('modal-img').alt = data.title;
+    // Fill modal media (Image or Video)
+    const modalImg = document.getElementById('modal-img');
+    const modalVideo = document.getElementById('modal-video');
+
+    if (data.video) {
+      if (modalVideo) {
+        modalVideo.src = data.video;
+        modalVideo.style.display = 'block';
+        modalVideo.play().catch(() => {});
+      }
+      if (modalImg) modalImg.style.display = 'none';
+    } else {
+      if (modalVideo) {
+        modalVideo.pause();
+        modalVideo.src = '';
+        modalVideo.style.display = 'none';
+      }
+      if (modalImg) {
+        modalImg.src = data.img;
+        modalImg.alt = data.title;
+        modalImg.style.display = 'block';
+      }
+    }
+
     document.getElementById('modal-title').textContent = data.title;
     document.getElementById('modal-location-text').textContent = data.location;
     document.getElementById('modal-desc').textContent = data.desc;
@@ -504,6 +564,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const closeProjectModal = () => {
     if (!modalOverlay) return;
+    const modalVideo = document.getElementById('modal-video');
+    if (modalVideo) {
+      modalVideo.pause();
+    }
     modalOverlay.classList.remove('active');
     document.body.style.overflow = '';
   };
@@ -538,6 +602,156 @@ document.addEventListener('DOMContentLoaded', () => {
       openProjectModal(btn.dataset.project);
     });
   });
+
+  // ── HYDRATATION DYNAMIQUE DES CHANTIERS DEPUIS SUPABASE ──
+  const hydrateChantiers = async () => {
+    const grid = document.getElementById('chantiers-dynamiques-grid');
+    if (!grid) return;
+
+    if (!window.SixSigmaDB || !window.SixSigmaDB.chantiers) return;
+
+    try {
+      const projects = await window.SixSigmaDB.chantiers.getAll();
+      if (!projects || projects.length === 0) return; // Garder les 2 projets statiques en fallback
+
+      // Vider la grille pour afficher les données dynamiques à jour
+      grid.innerHTML = '';
+
+      projects.forEach((p, idx) => {
+        const projKey = p.id || `proj-${idx}`;
+        const serviceSlug = getServiceSlug(p.category);
+        const icon = getCategoryIcon(p.category);
+        const hasVideo = Boolean(p.video_url && p.video_url.trim() !== '');
+
+        // Extraction et structuration des métriques
+        const parsedStats = parseProjectMetrics(p.metrics);
+        const tags = [
+          p.category,
+          p.client,
+          p.location,
+          ...parsedStats.map(s => `${s.label}: ${s.value}`)
+        ].filter(Boolean);
+
+        // Mémorisation dans projectData pour la fiche technique modale
+        projectData[projKey] = {
+          img: p.image_url || 'projet-genie-civil-minier.png',
+          video: p.video_url || null,
+          title: p.title,
+          location: (p.location || 'RDC') + (p.client ? ` • Client : ${p.client}` : ''),
+          badges: [
+            { text: p.category || 'Génie Civil', icon: icon, type: 'primary' },
+            { text: p.completion_date ? `Livré en ${p.completion_date}` : 'Livré clés en main', icon: 'fa-check', type: 'success' },
+            ...(hasVideo ? [{ text: 'Vidéo HD', icon: 'fa-play', type: 'accent' }] : [])
+          ],
+          desc: p.description || 'Chantier d\'envergure exécuté selon les plus hauts standards d\'ingénierie et de conformité HSE.',
+          stats: parsedStats.length > 0 ? parsedStats : [
+            { value: p.completion_date || '2024', label: 'Année' },
+            { value: '0 LTI', label: 'Sécurité HSE' }
+          ],
+          tags: tags.length > 0 ? tags : ['Ingénierie BTP', 'Qualité certifiée', 'Sécurité HSE']
+        };
+
+        // Création carte DOM
+        const card = document.createElement('article');
+        card.className = `project-card reveal visible`;
+        card.dataset.service = serviceSlug;
+
+        const mediaHtml = hasVideo
+          ? `<video src="${p.video_url}" playsinline autoplay muted loop poster="${p.image_url || 'projet-genie-civil-minier.png'}" class="project-img project-video" preload="metadata"></video>`
+          : `<img src="${p.image_url || 'projet-genie-civil-minier.png'}" alt="${p.title}" class="project-img" loading="lazy" onerror="this.src='projet-genie-civil-minier.png'" />`;
+
+        const tagsHtml = tags.slice(0, 4).map(t => `<span class="project-tag">${t}</span>`).join('');
+
+        card.innerHTML = `
+          <div class="project-image-wrapper">
+            ${mediaHtml}
+            <div class="project-badges">
+              <span class="badge badge-primary"><i class="fa-solid ${icon}"></i> ${p.category || 'Génie Civil'}</span>
+              <span class="badge badge-success"><i class="fa-solid fa-check"></i> ${p.completion_date || 'En exploitation'}</span>
+              ${hasVideo ? '<span class="badge badge-accent" style="background: rgba(14,165,233,0.95);"><i class="fa-solid fa-play"></i> Vidéo HD</span>' : ''}
+            </div>
+          </div>
+          <div class="project-body">
+            <div class="project-meta">
+              <span class="project-location"><i class="fa-solid fa-location-dot"></i> ${p.location || 'RDC'}</span>
+              <span class="project-scale"><i class="fa-solid fa-layer-group"></i> ${p.client || 'Infrastructure'}</span>
+            </div>
+            <h3 class="project-title">${p.title}</h3>
+            <p class="project-desc">${p.description || ''}</p>
+            <div class="project-tags">
+              ${tagsHtml}
+            </div>
+            <div class="project-footer">
+              <button class="project-view-btn" data-project="${projKey}">
+                Voir la fiche technique <i class="fa-solid fa-arrow-right"></i>
+              </button>
+              <a href="#contact" class="service-cta project-cta-link" data-service="${serviceSlug}">
+                Demander une étude similaire <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        `;
+
+        // Événements boutons et carte
+        const viewBtn = card.querySelector('.project-view-btn');
+        if (viewBtn) {
+          viewBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openProjectModal(projKey);
+          });
+        }
+
+        const ctaLink = card.querySelector('.project-cta-link');
+        if (ctaLink) {
+          ctaLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            scrollToFormWithService(serviceSlug);
+          });
+        }
+
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.project-view-btn, .project-cta-link')) return;
+          openProjectModal(projKey);
+        });
+
+        grid.appendChild(card);
+      });
+    } catch (err) {
+      console.warn('Erreur lors de l\'hydratation dynamique des chantiers:', err);
+    }
+  };
+
+  // ── HYDRATATION DU HERO VIDÉO DEPUIS SUPABASE SETTINGS ──
+  const hydrateHeroVideo = async () => {
+    if (!window.SixSigmaDB || !window.SixSigmaDB.settings) return;
+    try {
+      const customHeroUrl = await window.SixSigmaDB.settings.get('hero_video_url');
+      if (customHeroUrl && customHeroUrl.trim() !== '') {
+        const heroVideo = document.querySelector('.hero-video');
+        if (heroVideo) {
+          let source = heroVideo.querySelector('source');
+          if (!source) {
+            source = document.createElement('source');
+            heroVideo.appendChild(source);
+          }
+          if (source.src !== customHeroUrl) {
+            source.src = customHeroUrl;
+            source.type = 'video/mp4';
+            heroVideo.load();
+            heroVideo.play().catch(() => {});
+          }
+        }
+      }
+    } catch (e) {
+      console.info('Hero video hydration skipped:', e);
+    }
+  };
+
+  // Lancement des hydratations Supabase
+  hydrateChantiers();
+  hydrateHeroVideo();
 
   // ── REAL-TIME FORM VALIDATION ──
   const formFields = form ? form.querySelectorAll('.form-input, .form-select, .form-textarea') : [];

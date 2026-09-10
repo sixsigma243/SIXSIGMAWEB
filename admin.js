@@ -615,9 +615,18 @@ function initAdminPortal() {
         items.forEach(proj => {
             const card = document.createElement('div');
             card.className = 'admin-project-card';
+            const hasVideo = Boolean(proj.video_url && proj.video_url.trim() !== '');
+
             card.innerHTML = `
-                <div class="project-card-media">
-                    <img src="${proj.image_url}" alt="${proj.title}" onerror="this.src='projet-genie-civil-minier.png'">
+                <div class="project-card-media" style="position: relative;">
+                    ${hasVideo
+                        ? `<video src="${proj.video_url}" playsinline autoplay muted loop poster="${proj.image_url || 'projet-genie-civil-minier.png'}" style="width:100%;height:100%;object-fit:cover;"></video>
+                           <span style="position:absolute;top:8px;left:8px;background:rgba(14,165,233,0.95);color:#fff;padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:700;display:flex;align-items:center;gap:4px;">
+                               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                               Vidéo MP4
+                           </span>`
+                        : `<img src="${proj.image_url}" alt="${proj.title}" onerror="this.src='projet-genie-civil-minier.png'">`
+                    }
                 </div>
                 <div class="project-card-body">
                     <h4 class="project-card-title">${proj.title}</h4>
@@ -645,13 +654,65 @@ function initAdminPortal() {
     // Nouveau projet chantier
     const btnOpenAddProject = document.getElementById('btnOpenAddProjectModal');
     const projectForm = document.getElementById('projectForm');
+    const projImageFileInput = document.getElementById('projImageFileInput');
+    const projImageUploadStatus = document.getElementById('projImageUploadStatus');
+    const projFormImageUrl = document.getElementById('projFormImageUrl');
+    const projVideoFileInput = document.getElementById('projVideoFileInput');
+    const projVideoUploadStatus = document.getElementById('projVideoUploadStatus');
+    const projFormVideoUrl = document.getElementById('projFormVideoUrl');
 
     if (btnOpenAddProject) {
         btnOpenAddProject.addEventListener('click', () => {
             if (projectForm) projectForm.reset();
             document.getElementById('projFormId').value = '';
             document.getElementById('projFormDate').value = '2024';
+            if (projImageUploadStatus) projImageUploadStatus.textContent = 'Aucun fichier';
+            if (projVideoUploadStatus) projVideoUploadStatus.textContent = 'Aucune vidéo';
             if (projectModal) projectModal.style.display = 'flex';
+        });
+    }
+
+    // Téléversement d'image projet vers Supabase Storage
+    if (projImageFileInput) {
+        projImageFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (projImageUploadStatus) projImageUploadStatus.innerHTML = '<span style="color:#38bdf8;">⏳ Envoi en cours...</span>';
+            try {
+                if (window.SixSigmaDB && window.SixSigmaDB.storage) {
+                    const res = await window.SixSigmaDB.storage.upload(file);
+                    if (res && res.url) {
+                        if (projFormImageUrl) projFormImageUrl.value = res.url;
+                        if (projImageUploadStatus) projImageUploadStatus.innerHTML = '<span style="color:#4ade80;">✅ Hébergé sur Supabase Storage</span>';
+                        showToast('Image hébergée avec succès sur Supabase Storage !', 'success');
+                    }
+                }
+            } catch (err) {
+                if (projImageUploadStatus) projImageUploadStatus.innerHTML = '<span style="color:#f87171;">❌ Échec de l\'envoi</span>';
+                showToast('Erreur upload image : ' + err.message, 'error');
+            }
+        });
+    }
+
+    // Téléversement de vidéo projet (.mp4) vers Supabase Storage
+    if (projVideoFileInput) {
+        projVideoFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (projVideoUploadStatus) projVideoUploadStatus.innerHTML = '<span style="color:#38bdf8;">⏳ Envoi vidéo MP4 en cours...</span>';
+            try {
+                if (window.SixSigmaDB && window.SixSigmaDB.storage) {
+                    const res = await window.SixSigmaDB.storage.upload(file);
+                    if (res && res.url) {
+                        if (projFormVideoUrl) projFormVideoUrl.value = res.url;
+                        if (projVideoUploadStatus) projVideoUploadStatus.innerHTML = '<span style="color:#4ade80;">✅ Vidéo MP4 hébergée sur Supabase Storage</span>';
+                        showToast('Vidéo MP4 hébergée sur Supabase Storage !', 'success');
+                    }
+                }
+            } catch (err) {
+                if (projVideoUploadStatus) projVideoUploadStatus.innerHTML = '<span style="color:#f87171;">❌ Échec de l\'envoi vidéo</span>';
+                showToast('Erreur upload vidéo : ' + err.message, 'error');
+            }
         });
     }
 
@@ -665,6 +726,7 @@ function initAdminPortal() {
                 location: document.getElementById('projFormLocation').value.trim(),
                 completion_date: document.getElementById('projFormDate').value.trim(),
                 image_url: document.getElementById('projFormImageUrl').value.trim(),
+                video_url: document.getElementById('projFormVideoUrl') ? document.getElementById('projFormVideoUrl').value.trim() : null,
                 description: document.getElementById('projFormDescription').value.trim(),
                 metrics: {
                     metrique1: document.getElementById('projFormMetric1').value.trim(),
@@ -676,9 +738,83 @@ function initAdminPortal() {
             if (window.SixSigmaDB && window.SixSigmaDB.chantiers) {
                 await window.SixSigmaDB.chantiers.create(projData);
             }
-            showToast('Chantier ajouté avec succès.', 'success');
+            showToast('Chantier ajouté avec succès et synchronisé en direct.', 'success');
             if (projectModal) projectModal.style.display = 'none';
             await loadProjects();
+        });
+    }
+
+    // ── GESTION DE LA VIDÉO DU HERO (ACCUEIL) ──
+    const heroVideoModal = document.getElementById('heroVideoModal');
+    const btnOpenHeroVideo = document.getElementById('btnOpenHeroVideoModal');
+    const heroVideoForm = document.getElementById('heroVideoForm');
+    const heroVideoUrlInput = document.getElementById('heroVideoUrlInput');
+    const heroVideoFileInput = document.getElementById('heroVideoFileInput');
+    const heroVideoUploadStatus = document.getElementById('heroVideoUploadStatus');
+    const heroVideoPreviewContainer = document.getElementById('heroVideoPreviewContainer');
+    const heroVideoPreview = document.getElementById('heroVideoPreview');
+
+    if (btnOpenHeroVideo) {
+        btnOpenHeroVideo.addEventListener('click', async () => {
+            let currentUrl = 'assets/mine-kolwezi.mp4';
+            if (window.SixSigmaDB && window.SixSigmaDB.settings) {
+                currentUrl = await window.SixSigmaDB.settings.get('hero_video_url', 'assets/mine-kolwezi.mp4');
+            }
+            if (heroVideoUrlInput) heroVideoUrlInput.value = currentUrl;
+            if (heroVideoPreview && heroVideoPreviewContainer) {
+                heroVideoPreview.src = currentUrl;
+                heroVideoPreviewContainer.style.display = 'block';
+            }
+            if (heroVideoModal) heroVideoModal.style.display = 'flex';
+        });
+    }
+
+    if (heroVideoFileInput) {
+        heroVideoFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (heroVideoUploadStatus) heroVideoUploadStatus.innerHTML = '<span style="color:#38bdf8;">⏳ Téléversement de la vidéo Hero vers Supabase Storage...</span>';
+            try {
+                if (window.SixSigmaDB && window.SixSigmaDB.storage) {
+                    const res = await window.SixSigmaDB.storage.upload(file);
+                    if (res && res.url) {
+                        if (heroVideoUrlInput) heroVideoUrlInput.value = res.url;
+                        if (heroVideoPreview && heroVideoPreviewContainer) {
+                            heroVideoPreview.src = res.url;
+                            heroVideoPreviewContainer.style.display = 'block';
+                            heroVideoPreview.play().catch(() => {});
+                        }
+                        if (heroVideoUploadStatus) heroVideoUploadStatus.innerHTML = '<span style="color:#4ade80;">✅ Vidéo Hero téléversée avec succès</span>';
+                        showToast('Vidéo Hero téléversée sur Supabase Storage !', 'success');
+                    }
+                }
+            } catch (err) {
+                if (heroVideoUploadStatus) heroVideoUploadStatus.innerHTML = '<span style="color:#f87171;">❌ Erreur téléversement</span>';
+                showToast('Erreur d\'upload : ' + err.message, 'error');
+            }
+        });
+    }
+
+    if (heroVideoUrlInput) {
+        heroVideoUrlInput.addEventListener('input', () => {
+            const url = heroVideoUrlInput.value.trim();
+            if (url && heroVideoPreview && heroVideoPreviewContainer) {
+                heroVideoPreview.src = url;
+                heroVideoPreviewContainer.style.display = 'block';
+            }
+        });
+    }
+
+    if (heroVideoForm) {
+        heroVideoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newUrl = heroVideoUrlInput.value.trim();
+            if (!newUrl) return;
+            if (window.SixSigmaDB && window.SixSigmaDB.settings) {
+                await window.SixSigmaDB.settings.set('hero_video_url', newUrl);
+            }
+            showToast('Vidéo du Hero mise à jour et active sur le site !', 'success');
+            if (heroVideoModal) heroVideoModal.style.display = 'none';
         });
     }
 
