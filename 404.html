@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page non trouvée (404) | SIX SIGMA</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" type="image/jpeg" href="logo.jpg" />
+  <link rel="apple-touch-icon" href="logo.jpg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .error-hero {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: calc(var(--header-h) + 2rem) 1rem 4rem;
+      background: radial-gradient(circle at center, rgba(158, 42, 43, 0.08) 0%, var(--clr-white) 70%);
+    }
+    .error-code {
+      font-family: var(--ff-heading);
+      font-size: clamp(5rem, 15vw, 10rem);
+      font-weight: 900;
+      color: var(--clr-secondary);
+      line-height: 0.9;
+      margin-bottom: 1rem;
+      letter-spacing: -0.04em;
+    }
+    .error-code span {
+      color: var(--clr-primary);
+    }
+    .error-title {
+      font-family: var(--ff-heading);
+      font-size: clamp(1.5rem, 4vw, 2.25rem);
+      font-weight: 800;
+      color: var(--clr-secondary);
+      margin-bottom: 1rem;
+      letter-spacing: -0.025em;
+    }
+    .error-desc {
+      font-size: 1.1rem;
+      color: var(--clr-text-muted);
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+    .error-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header scrolled">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="logo.jpg" alt="SIX SIGMA" class="logo-img" />
+      </a>
+      <nav class="nav">
+        <ul class="nav-links">
+          <li><a href="index.html" class="nav-link">Accueil</a></li>
+          <li><a href="parc-materiel.html" class="nav-link">Parc Matériel</a></li>
+          <li><a href="hse.html" class="nav-link">Charte HSE</a></li>
+          <li><a href="index.html#contact" class="nav-link">Contact</a></li>
+        </ul>
+        <a href="index.html#contact" class="btn btn-primary">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Devis Express</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 404 MAIN -->
+  <main class="error-hero">
+    <div class="container">
+      <div class="error-code">4<span>0</span>4</div>
+      <h1 class="error-title">Chantier ou page introuvable</h1>
+      <p class="error-desc">
+        La ressource que vous recherchez a été déplacée, modifiée ou n'existe pas. Veuillez revenir à la page d'accueil ou consulter notre catalogue d'engins lourds.
+      </p>
+      <div class="error-actions">
+        <a href="index.html" class="btn btn-primary btn-lg">
+          <i class="fa-solid fa-house"></i>
+          <span>Retour à l'accueil</span>
+        </a>
+        <a href="parc-materiel.html" class="btn btn-secondary btn-lg">
+          <i class="fa-solid fa-truck-monster"></i>
+          <span>Consulter le parc matériel</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-bottom">
+      <div class="container">
+        <p class="footer-copy">
+          &copy; 2026 <a href="index.html#top">SIX SIGMA SARL</a>. Tous droits réservés.
+        </p>
+        <div class="footer-bottom-links">
+          <a href="index.html" class="footer-bottom-link">Accueil</a>
+          <a href="parc-materiel.html" class="footer-bottom-link">Flotte Matériel</a>
+          <a href="hse.html" class="footer-bottom-link">Charte HSE</a>
+          <a href="politique-confidentialite.html" class="footer-bottom-link">Confidentialité</a>
+          <a href="mentions-legales.html" class="footer-bottom-link">Mentions Légales</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
