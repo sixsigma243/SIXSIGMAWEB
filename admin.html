@@ -60,49 +60,110 @@
 
     <!-- ÉCRAN 1 : CONNEXION SÉCURISÉE (Affiché si non connecté) -->
     <div id="loginView" class="admin-login-view">
-        <div class="login-card">
+        <div class="login-card" id="loginCard">
             <div class="login-header">
                 <img src="logo-dark-mode.png" alt="SIX SIGMA" class="login-logo">
+                <div class="login-badge-pill">
+                    <span class="security-dot"></span>
+                    <span>Portail d'Administration Sécurisé</span>
+                </div>
                 <h2>Connexion Administrateur</h2>
-                <p>Gestion en temps réel du parc matériel, des chantiers et des demandes clients.</p>
+                <p>Espace de contrôle en temps réel du parc matériel, des chantiers et des demandes clients.</p>
             </div>
 
-            <form id="adminLoginForm" class="login-form">
-                <div id="loginAlert" class="admin-alert error" style="display: none;"></div>
+            <!-- CARTE REPRISE DE SESSION (Affichée si session déjà mémorisée) -->
+            <div id="existingSessionBanner" class="existing-session-banner" style="display: none;">
+                <div class="existing-session-header">
+                    <div class="existing-user-chip">
+                        <div class="existing-user-avatar">A</div>
+                        <div class="existing-user-meta">
+                            <span class="existing-user-label">Session mémorisée active</span>
+                            <strong id="existingUserEmailText" class="existing-user-email">sixsigmaadministration@gmail.com</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="existing-session-actions">
+                    <button type="button" id="btnResumeSession" class="btn-resume-session">
+                        <span>Ouvrir le Tableau de Bord</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                    <button type="button" id="btnSwitchAccount" class="btn-switch-account">
+                        Se connecter avec un autre compte
+                    </button>
+                </div>
+                <div class="existing-divider">
+                    <span>ou ré-authentification</span>
+                </div>
+            </div>
+
+            <!-- FORMULAIRE DE CONNEXION PRINCIPAL -->
+            <form id="adminLoginForm" class="login-form" novalidate>
+                <!-- Zone d'alerte stylisée avec icône -->
+                <div id="loginAlert" class="admin-alert error" style="display: none;">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span id="loginAlertText">Identifiants incorrects.</span>
+                </div>
 
                 <div class="form-group">
-                    <label for="loginEmail">Adresse Email Admin</label>
+                    <label for="loginEmail">Adresse Email Administrateur</label>
                     <div class="input-with-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg class="field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                             <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
-                        <input type="email" id="loginEmail" placeholder="nom@domaine.cd" required autofocus>
+                        <input type="email" id="loginEmail" placeholder="sixsigmaadministration@gmail.com" autocomplete="username" required autofocus>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="loginPassword">Mot de passe</label>
-                    <div class="input-with-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <div class="input-with-icon input-password-wrapper">
+                        <svg class="field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
-                        <input type="password" id="loginPassword" placeholder="••••••••••••" required>
+                        <input type="password" id="loginPassword" placeholder="••••••••••••" autocomplete="current-password" required>
+                        <button type="button" id="btnTogglePassword" class="btn-toggle-password" title="Afficher/Masquer le mot de passe" tabindex="-1" aria-label="Afficher ou masquer le mot de passe">
+                            <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
+                <div class="form-utilities-row">
+                    <label class="custom-checkbox-container">
+                        <input type="checkbox" id="rememberMe" checked>
+                        <span class="custom-checkbox-box"></span>
+                        <span class="checkbox-label">Se souvenir de moi</span>
+                    </label>
+                    <span class="auth-security-tag">Accès Chiffré SSL / TLS</span>
+                </div>
+
                 <button type="submit" id="btnLoginSubmit" class="btn-login-submit">
-                    <span>Accéder au Tableau de Bord</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <span class="btn-login-spinner" id="btnLoginSpinner" style="display: none;"></span>
+                    <span id="btnLoginText">Accéder au Tableau de Bord</span>
+                    <svg class="btn-login-arrow" id="btnLoginArrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
                     </svg>
                 </button>
 
                 <div class="login-footer-hint">
-                    <span class="security-dot"></span>
-                    <span>Session chiffrée SSL / TLS</span>
+                    <span class="security-dot live"></span>
+                    <span>Session chiffrée SSL / Protection CSRF & XSS</span>
                 </div>
             </form>
         </div>

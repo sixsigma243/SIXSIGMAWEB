@@ -31,6 +31,19 @@ function initAdminPortal() {
     let currentQuotesList = [];
     let currentReservationsList = [];
 
+    // Éléments du formulaire de connexion enrichi
+    const loginCard = document.getElementById('loginCard');
+    const loginAlertText = document.getElementById('loginAlertText');
+    const btnLoginSpinner = document.getElementById('btnLoginSpinner');
+    const btnLoginText = document.getElementById('btnLoginText');
+    const btnLoginArrow = document.getElementById('btnLoginArrow');
+    const btnTogglePassword = document.getElementById('btnTogglePassword');
+    const rememberMeCheckbox = document.getElementById('rememberMe');
+    const existingSessionBanner = document.getElementById('existingSessionBanner');
+    const existingUserEmailText = document.getElementById('existingUserEmailText');
+    const btnResumeSession = document.getElementById('btnResumeSession');
+    const btnSwitchAccount = document.getElementById('btnSwitchAccount');
+
     // ==========================================================================
     // 1. GESTION DE SESSION & INITIALISATION
     // ==========================================================================
@@ -44,16 +57,32 @@ function initAdminPortal() {
                 if (raw) user = JSON.parse(raw).user;
             }
 
-            if (user) {
+            if (user && user.email) {
+                // Si l'utilisateur est authentifié
                 if (loginView) loginView.style.display = 'none';
                 if (dashboardView) dashboardView.style.display = 'block';
                 if (userProfileBadge) userProfileBadge.style.display = 'flex';
                 if (userEmailDisplay) userEmailDisplay.textContent = user.email || 'Admin';
                 loadDashboardData();
             } else {
+                // Mode non connecté : afficher l'écran de login
                 if (loginView) loginView.style.display = 'flex';
                 if (dashboardView) dashboardView.style.display = 'none';
                 if (userProfileBadge) userProfileBadge.style.display = 'none';
+
+                // Vérifier si une session antérieure est mémorisée
+                const raw = localStorage.getItem('sixsigma_admin_session');
+                if (raw) {
+                    try {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && parsed.user && parsed.user.email) {
+                            if (existingSessionBanner && existingUserEmailText) {
+                                existingUserEmailText.textContent = parsed.user.email;
+                                existingSessionBanner.style.display = 'block';
+                            }
+                        }
+                    } catch (err) {}
+                }
             }
         } catch (e) {
             console.warn('Erreur vérification auth:', e);
@@ -62,7 +91,51 @@ function initAdminPortal() {
         }
     }
 
-    // Gestionnaire de connexion robuste
+    // Bascule Afficher/Masquer le mot de passe
+    if (btnTogglePassword) {
+        btnTogglePassword.addEventListener('click', () => {
+            const passEl = document.getElementById('loginPassword');
+            if (!passEl) return;
+            const isPassword = passEl.type === 'password';
+            passEl.type = isPassword ? 'text' : 'password';
+
+            const eyeShow = btnTogglePassword.querySelector('.eye-show');
+            const eyeHide = btnTogglePassword.querySelector('.eye-hide');
+            if (eyeShow) eyeShow.style.display = isPassword ? 'none' : 'block';
+            if (eyeHide) eyeHide.style.display = isPassword ? 'block' : 'none';
+            btnTogglePassword.title = isPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe';
+        });
+    }
+
+    // Reprendre la session mémorisée
+    if (btnResumeSession) {
+        btnResumeSession.addEventListener('click', () => {
+            const raw = localStorage.getItem('sixsigma_admin_session');
+            if (raw) {
+                const sess = JSON.parse(raw);
+                if (loginView) loginView.style.display = 'none';
+                if (dashboardView) dashboardView.style.display = 'block';
+                if (userProfileBadge) userProfileBadge.style.display = 'flex';
+                if (userEmailDisplay) userEmailDisplay.textContent = (sess.user && sess.user.email) || 'Admin';
+                showToast('Session restaurée avec succès.', 'success');
+                loadDashboardData();
+            }
+        });
+    }
+
+    // Changer de compte
+    if (btnSwitchAccount) {
+        btnSwitchAccount.addEventListener('click', () => {
+            if (existingSessionBanner) existingSessionBanner.style.display = 'none';
+            localStorage.removeItem('sixsigma_admin_session');
+            const emailEl = document.getElementById('loginEmail');
+            const passEl = document.getElementById('loginPassword');
+            if (emailEl) { emailEl.value = ''; emailEl.focus(); }
+            if (passEl) passEl.value = '';
+        });
+    }
+
+    // Gestionnaire de connexion robuste et complet
     async function handleLogin(e) {
         if (e) {
             e.preventDefault();
@@ -77,64 +150,121 @@ function initAdminPortal() {
 
         if (loginAlert) loginAlert.style.display = 'none';
 
+        // Validation immédiate
         if (!email || !password) {
-            if (loginAlert) {
-                loginAlert.textContent = 'Veuillez saisir votre adresse email et votre mot de passe.';
-                loginAlert.style.display = 'block';
-            }
+            triggerLoginError('Veuillez saisir votre adresse email et votre mot de passe.');
             if (!email && emailEl) emailEl.focus();
             else if (passEl) passEl.focus();
             return;
         }
 
-        if (btnLoginSubmit) {
-            btnLoginSubmit.disabled = true;
-            btnLoginSubmit.querySelector('span').textContent = 'Vérification en cours...';
-        }
+        // État de chargement élégant sur le bouton
+        setLoginLoadingState(true);
 
         try {
-            // Correspondance directe des identifiants d'administration
-            const isTargetAdmin = (
-                (email === 'sixsigmaadministration@gmail.com' || email === 'admin@sixsigma.cd') &&
-                (password === 'SIXsigma243' || password.toLowerCase() === 'sixsigma243' || password === 'SixSigma2024!')
-            );
+            let authResult = null;
 
-            if (isTargetAdmin) {
-                const adminUser = {
-                    id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
-                    email: email,
-                    role: 'admin'
-                };
-                localStorage.setItem('sixsigma_admin_session', JSON.stringify({
-                    user: adminUser,
-                    signedInAt: Date.now()
-                }));
-                showToast('Connexion réussie ! Bienvenue sur le tableau de bord.', 'success');
-                checkAuth();
-                return;
-            }
-
-            // Tentative via la couche backend
+            // 1. Authentification via le module Supabase / SixSigmaDB
             if (window.SixSigmaDB && window.SixSigmaDB.auth) {
-                const res = await window.SixSigmaDB.auth.signIn(email, password);
-                if (res.success) {
-                    showToast('Connexion réussie !', 'success');
-                    checkAuth();
-                    return;
+                authResult = await window.SixSigmaDB.auth.signIn(email, password);
+            } else {
+                // Fallback direct si le script DB chargeait encore
+                const isTargetAdmin = (
+                    email === 'sixsigmaadministration@gmail.com' &&
+                    (password === 'SIXsigma243' || password === 'sixsigma243')
+                );
+                if (isTargetAdmin) {
+                    const adminUser = {
+                        id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                        email: email,
+                        role: 'admin'
+                    };
+                    localStorage.setItem('sixsigma_admin_session', JSON.stringify({
+                        user: adminUser,
+                        signedInAt: Date.now(),
+                        provider: 'offline_verified'
+                    }));
+                    authResult = { success: true, user: adminUser };
+                } else {
+                    throw new Error('Identifiants incorrects.');
                 }
             }
 
-            throw new Error('Identifiants incorrects. Veuillez vérifier votre email et mot de passe.');
+            if (authResult && authResult.success) {
+                // Mémorisation de la préférence "Se souvenir de moi"
+                if (rememberMeCheckbox) {
+                    localStorage.setItem('sixsigma_remember_me', rememberMeCheckbox.checked ? 'true' : 'false');
+                }
+
+                // Animation de succès sur le bouton
+                if (btnLoginSubmit) {
+                    btnLoginSubmit.classList.add('is-success');
+                }
+                if (btnLoginSpinner) btnLoginSpinner.style.display = 'none';
+                if (btnLoginText) btnLoginText.textContent = 'Connexion autorisée ! Redirection...';
+
+                showToast('Connexion réussie ! Bienvenue sur le CMS Six Sigma.', 'success');
+
+                // Transition fluide vers le Dashboard
+                setTimeout(() => {
+                    setLoginLoadingState(false);
+                    if (loginView) loginView.style.display = 'none';
+                    if (dashboardView) dashboardView.style.display = 'block';
+                    if (userProfileBadge) userProfileBadge.style.display = 'flex';
+                    if (userEmailDisplay) userEmailDisplay.textContent = authResult.user.email || email;
+                    loadDashboardData();
+                }, 350);
+
+                return;
+            }
+
+            throw new Error('Identifiants incorrects. Veuillez vérifier votre adresse email et mot de passe.');
         } catch (err) {
-            if (loginAlert) {
-                loginAlert.textContent = err.message || 'Identifiants incorrects.';
-                loginAlert.style.display = 'block';
+            console.warn('Erreur connexion admin:', err);
+            const userFriendlyMsg = err.message && err.message.includes('Email not confirmed')
+                ? 'Adresse email en attente de confirmation Supabase.'
+                : (err.message && err.message.includes('Invalid login credentials')
+                    ? 'Adresse email ou mot de passe incorrect.'
+                    : (err.message || 'Identifiants incorrects.'));
+
+            triggerLoginError(userFriendlyMsg);
+            if (passEl) {
+                passEl.select();
+                passEl.focus();
             }
         } finally {
-            if (btnLoginSubmit) {
-                btnLoginSubmit.disabled = false;
-                btnLoginSubmit.querySelector('span').textContent = 'Accéder au Tableau de Bord';
-            }
+            setLoginLoadingState(false);
+        }
+    }
+
+    function setLoginLoadingState(isLoading) {
+        if (!btnLoginSubmit) return;
+        btnLoginSubmit.disabled = isLoading;
+        if (isLoading) {
+            btnLoginSubmit.classList.add('is-loading');
+            btnLoginSubmit.classList.remove('is-success');
+            if (btnLoginSpinner) btnLoginSpinner.style.display = 'inline-block';
+            if (btnLoginArrow) btnLoginArrow.style.display = 'none';
+            if (btnLoginText) btnLoginText.textContent = 'Vérification Supabase...';
+        } else {
+            btnLoginSubmit.classList.remove('is-loading');
+            if (btnLoginSpinner) btnLoginSpinner.style.display = 'none';
+            if (btnLoginArrow) btnLoginArrow.style.display = 'inline-block';
+            if (btnLoginText) btnLoginText.textContent = 'Accéder au Tableau de Bord';
+        }
+    }
+
+    function triggerLoginError(message) {
+        if (loginAlert) {
+            if (loginAlertText) loginAlertText.textContent = message;
+            else loginAlert.textContent = message;
+            loginAlert.style.display = 'flex';
+        }
+        if (loginCard) {
+            loginCard.classList.remove('shake');
+            void loginCard.offsetWidth; // Reflow for replay
+            loginCard.classList.add('shake');
+            setTimeout(() => loginCard.classList.remove('shake'), 600);
         }
     }
 
@@ -143,10 +273,6 @@ function initAdminPortal() {
     }
     if (btnLoginSubmit) {
         btnLoginSubmit.addEventListener('click', (e) => {
-            if (loginForm && !loginForm.checkValidity()) {
-                // Laisse la validation HTML5 s'afficher si champ vide
-                return;
-            }
             handleLogin(e);
         });
     }
@@ -159,7 +285,8 @@ function initAdminPortal() {
             } else {
                 localStorage.removeItem('sixsigma_admin_session');
             }
-            showToast('Déconnexion effectuée.', 'info');
+            if (existingSessionBanner) existingSessionBanner.style.display = 'none';
+            showToast('Vous avez été déconnecté avec succès.', 'info');
             checkAuth();
         });
     }
