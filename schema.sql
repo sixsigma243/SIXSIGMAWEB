@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS public.chantiers_realisations (
     location TEXT,
     completion_date TEXT,
     image_url TEXT,
+    video_url TEXT,
     description TEXT,
     metrics JSONB DEFAULT '{}'::jsonb,
     is_featured BOOLEAN DEFAULT true,
@@ -369,3 +370,17 @@ VALUES
     2
 )
 ON CONFLICT DO NOTHING;
+
+-- ------------------------------------------------------------------------------
+-- 8. TABLE : CONFIGURATION GLOBALE DU SITE & MÉDIA HERO
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.site_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public Read Settings" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "Admin Update Settings" ON public.site_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
