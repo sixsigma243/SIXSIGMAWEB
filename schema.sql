@@ -10,7 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. TABLE : PARC MATÉRIEL (ENGINS LOURDS & ÉQUIPEMENTS)
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.parc_materiel (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     code TEXT UNIQUE,
     name TEXT NOT NULL,
     category TEXT NOT NULL, -- 'terrassement', 'transport', 'levage', 'compactage', 'energie', 'forage'
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.parc_materiel (
 -- 2. TABLE : CHANTIERS & RÉALISATIONS
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.chantiers_realisations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     title TEXT NOT NULL,
     category TEXT NOT NULL,
     client TEXT,
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS public.chantiers_realisations (
 -- 3. TABLE : DEMANDES DE DEVIS
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.demandes_devis (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     nom TEXT NOT NULL,
     email TEXT NOT NULL,
     telephone TEXT,
@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS public.demandes_devis (
 -- 4. TABLE : DEMANDES DE RÉSERVATION D'ENGINS
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.demandes_reservation (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    equipment_id UUID REFERENCES public.parc_materiel(id) ON DELETE SET NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    equipment_id TEXT REFERENCES public.parc_materiel(id) ON DELETE SET NULL,
     equipment_name TEXT,
     nom_client TEXT NOT NULL,
     email TEXT NOT NULL,
