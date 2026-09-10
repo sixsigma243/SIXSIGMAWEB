@@ -238,6 +238,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   };
 
+  const saveQuoteToBackend = (data) => {
+    if (window.SixSigmaDB && window.SixSigmaDB.quotes) {
+      window.SixSigmaDB.quotes.submit({
+        nom: data.name,
+        email: data.email && data.email.trim() !== '' ? data.email : 'contact@client.cd',
+        telephone: data.phone,
+        entreprise: data.name,
+        service: data.serviceName,
+        description: data.message
+      }).then(res => {
+        console.log('Devis enregistré dans Supabase/CMS:', res);
+      }).catch(err => {
+        console.warn('Erreur sauvegarde devis:', err);
+      });
+    }
+  };
+
   // Primary: WhatsApp Dispatch
   if (form) {
     form.addEventListener('submit', (e) => {
@@ -245,6 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = getFormQuoteData();
       if (!data) return;
+
+      // Enregistrement automatique dans Supabase (CMS vitrine)
+      saveQuoteToBackend(data);
 
       const waMessage = [
         `🏗️ *COTATION DIRECTE — ${CONFIG.COMPANY}*`,
@@ -278,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3500);
       }
 
-      showFeedback('Votre demande a été préparée pour WhatsApp.');
+      showFeedback('Votre demande a été enregistrée et préparée pour WhatsApp.');
     });
   }
 
@@ -287,6 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSubmitEmail.addEventListener('click', () => {
       const data = getFormQuoteData();
       if (!data) return;
+
+      saveQuoteToBackend(data);
 
       const subject = encodeURIComponent(`[Demande de Cotation] ${data.serviceName} - ${data.name}`);
       const body = encodeURIComponent(

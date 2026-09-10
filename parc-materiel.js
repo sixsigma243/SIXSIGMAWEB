@@ -498,6 +498,63 @@ document.addEventListener('DOMContentLoaded', () => {
     return { company, name, phone, email, machineTitle, duration, location, operatorReq, notes };
   }
 
+  // ── Sauvegarde Réservation Supabase (CMS Vitrine) ──
+  function saveReservationToBackend(d) {
+    if (window.SixSigmaDB && window.SixSigmaDB.reservations) {
+      window.SixSigmaDB.reservations.submit({
+        equipment_name: d.machineTitle,
+        nom_client: d.name,
+        email: d.email || 'contact@client.cd',
+        telephone: d.phone,
+        entreprise: d.company,
+        duree_jours: d.duration,
+        localisation_chantier: d.location,
+        besoin_operateur: d.operatorReq.includes('Avec opérateur'),
+        notes_client: d.notes
+      }).then(res => {
+        console.log('Réservation enregistrée dans Supabase/CMS:', res);
+      }).catch(err => {
+        console.warn('Erreur sauvegarde réservation Supabase:', err);
+      });
+    }
+  }
+
+  // ── Synchronisation Dynamique des Statuts Matériel depuis Supabase ──
+  async function syncEquipmentWithBackend() {
+    if (!window.SixSigmaDB || !window.SixSigmaDB.equipment) return;
+    try {
+      const items = await window.SixSigmaDB.equipment.getAll();
+      if (!items || items.length === 0) return;
+
+      const statusClassMap = {
+        'disponible': 'available',
+        'en_mission': 'mission',
+        'maintenance': 'maintenance',
+        'revision': 'maintenance'
+      };
+
+      items.forEach(eq => {
+        const codeClean = (eq.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        // Recherche de la carte correspondante
+        const cards = document.querySelectorAll('.machine-card');
+        cards.forEach(card => {
+          const mid = (card.dataset.machineId || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (mid.includes(codeClean) || codeClean.includes(mid) || card.dataset.machineId === eq.id) {
+            const badge = card.querySelector('.machine-status-badge');
+            if (badge) {
+              badge.className = `machine-status-badge ${statusClassMap[eq.status] || 'available'}`;
+              badge.innerHTML = `<i class="fa-solid fa-circle"></i> ${eq.status_label || eq.status}`;
+            }
+          }
+        });
+      });
+    } catch (e) {
+      console.info('Info sync matériel:', e);
+    }
+  }
+
+  syncEquipmentWithBackend();
+
   // Réservation WhatsApp
   if (resWhatsappBtn) {
     resWhatsappBtn.addEventListener('click', (e) => {
@@ -510,7 +567,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const text = `*DEMANDE DE RÉSERVATION ENGING — SIX SIGMA*
+      // Enregistrement dans Supabase
+      saveReservationToBackend(d);
+
+      const text = `*DEMANDE DE RÉSERVATION ENGIN — SIX SIGMA*
 ----------------------------------------
 *Entreprise :* ${d.company}
 *Contact :* ${d.name}
@@ -543,6 +603,9 @@ Transmis depuis le catalogue SIX SIGMA`;
         document.getElementById('res-email')?.focus();
         return;
       }
+
+      // Enregistrement dans Supabase
+      saveReservationToBackend(d);
 
       const subject = encodeURIComponent(`[RÉSERVATION MATÉRIEL] ${d.machineTitle} - ${d.company}`);
       const body = encodeURIComponent(`Bonjour SIX SIGMA,

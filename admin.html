@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration & Gestion | SIX SIGMA RDC</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="favicon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+    <!-- BARRE DE NAVIGATION ADMINISTRATIVE -->
+    <header class="admin-navbar">
+        <div class="admin-nav-container">
+            <div class="admin-nav-left">
+                <a href="index.html" class="admin-logo-link">
+                    <img src="logo-dark-mode.png" alt="SIX SIGMA" class="admin-logo-img">
+                </a>
+                <div class="admin-badge-title">
+                    <span class="admin-pill">CMS Vitrine</span>
+                    <span class="admin-portal-name">Espace Gestionnaire</span>
+                </div>
+            </div>
+
+            <div class="admin-nav-right" id="navAuthSection">
+                <a href="index.html" target="_blank" class="btn-public-preview" title="Ouvrir le site public">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    <span>Voir le site public</span>
+                </a>
+                <div id="userProfileBadge" class="user-profile-badge" style="display: none;">
+                    <div class="user-avatar">A</div>
+                    <span id="userEmailDisplay" class="user-email">admin@sixsigma.cd</span>
+                    <button id="btnLogout" class="btn-logout" title="Se déconnecter">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ÉCRAN 1 : CONNEXION SÉCURISÉE (Affiché si non connecté) -->
+    <div id="loginView" class="admin-login-view">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="logo-dark-mode.png" alt="SIX SIGMA" class="login-logo">
+                <h2>Connexion Administrateur</h2>
+                <p>Gestion en temps réel du parc matériel, des chantiers et des demandes clients.</p>
+            </div>
+
+            <form id="adminLoginForm" class="login-form">
+                <div id="loginAlert" class="admin-alert error" style="display: none;"></div>
+
+                <div class="form-group">
+                    <label for="loginEmail">Adresse Email Admin</label>
+                    <div class="input-with-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <input type="email" id="loginEmail" placeholder="admin@sixsigma.cd" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <div class="input-with-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="password" id="loginPassword" placeholder="••••••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="btn-login-submit">
+                    <span>Accéder au Tableau de Bord</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+
+                <div class="login-footer-hint">
+                    <span class="security-dot"></span>
+                    <span>Session sécurisée rattachée à Supabase</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ÉCRAN 2 : DASHBOARD PRINCIPAL (Affiché après connexion) -->
+    <main id="dashboardView" class="admin-dashboard-view" style="display: none;">
+        <div class="admin-container">
+
+            <!-- BANNIÈRE D'ÉTAT SUPABASE & SYNCHRONISATION -->
+            <div id="supabaseStatusBanner" class="supabase-status-banner">
+                <div class="status-indicator-box">
+                    <span class="status-beacon live"></span>
+                    <div>
+                        <strong id="supabaseStatusText">Supabase Connecté</strong>
+                        <span class="status-subtext">yvryglqqpjhzelfqwlrp.supabase.co</span>
+                    </div>
+                </div>
+                <div class="status-actions">
+                    <button id="btnCheckDbSync" class="btn-mini-action" title="Tester la connexion aux tables">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                        </svg>
+                        <span>Tester Tables</span>
+                    </button>
+                    <button id="btnViewSqlModal" class="btn-mini-action" title="Consulter le script SQL d'initialisation">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        <span>Script SQL</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CARTES DE MÉTRIQUES / KPI -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-fleet">🚜</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Total Engins</span>
+                        <h3 id="kpiTotalEquipment" class="kpi-value">13</h3>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-available">✅</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Disponibles Immédiatement</span>
+                        <h3 id="kpiAvailableEquipment" class="kpi-value kpi-green">10</h3>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-mission">🏗️</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Engins en Mission</span>
+                        <h3 id="kpiMissionEquipment" class="kpi-value kpi-red">2</h3>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-maintenance">🔧</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">En Maintenance</span>
+                        <h3 id="kpiMaintenanceEquipment" class="kpi-value kpi-amber">1</h3>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-quotes">📥</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Demandes de Devis</span>
+                        <h3 id="kpiQuotesCount" class="kpi-value">0</h3>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-reservations">📋</div>
+                    <div class="kpi-info">
+                        <span class="kpi-label">Réservations Matériel</span>
+                        <h3 id="kpiReservationsCount" class="kpi-value">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET NAVIGATION DU DASHBOARD -->
+            <div class="admin-tabs-nav">
+                <button class="tab-btn active" data-tab="tabEquipment">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    </svg>
+                    <span>Parc Matériel & Statuts</span>
+                </button>
+
+                <button class="tab-btn" data-tab="tabProjects">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 20h20"></path>
+                        <path d="M5 20V8l7-5 7 5v12"></path>
+                        <path d="M9 20v-6h6v6"></path>
+                    </svg>
+                    <span>Chantiers & Réalisations</span>
+                </button>
+
+                <button class="tab-btn" data-tab="tabInquiries">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <span>Boîte de Réception (Leads)</span>
+                    <span id="badgeNewLeads" class="pill-counter" style="display: none;">0</span>
+                </button>
+            </div>
+
+            <!-- ========================================================== -->
+            <!-- ONGLET 1 : PARC MATÉRIEL (ENGINS LOURDS) -->
+            <!-- ========================================================== -->
+            <section id="tabEquipment" class="tab-content active">
+                <div class="tab-header-controls">
+                    <div class="controls-left">
+                        <div class="search-input-wrapper">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="equipmentSearchInput" placeholder="Rechercher un engin (CAT, Komatsu, Grue...)...">
+                        </div>
+                        <select id="equipmentCategoryFilter" class="admin-select">
+                            <option value="all">Toutes les catégories</option>
+                            <option value="terrassement">Terrassement Lourd</option>
+                            <option value="transport">Transport & Roulage</option>
+                            <option value="levage">Levage & Manutention</option>
+                            <option value="compactage">Compactage de Sol</option>
+                            <option value="forage">Forage & Minage</option>
+                            <option value="energie">Énergie & Groupes</option>
+                        </select>
+                        <select id="equipmentStatusFilter" class="admin-select">
+                            <option value="all">Tous les statuts</option>
+                            <option value="disponible">Disponible</option>
+                            <option value="en_mission">En mission</option>
+                            <option value="maintenance">En maintenance</option>
+                        </select>
+                    </div>
+
+                    <button id="btnOpenAddEquipmentModal" class="btn-primary-admin">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Ajouter un Engin</span>
+                    </button>
+                </div>
+
+                <!-- GRILLE DES CARTES MATÉRIEL ADMIN -->
+                <div id="adminEquipmentGrid" class="admin-cards-grid">
+                    <!-- Généré dynamiquement en JS -->
+                </div>
+            </section>
+
+            <!-- ========================================================== -->
+            <!-- ONGLET 2 : CHANTIERS & RÉALISATIONS -->
+            <!-- ========================================================== -->
+            <section id="tabProjects" class="tab-content">
+                <div class="tab-header-controls">
+                    <div class="controls-left">
+                        <p class="tab-description">
+                            Gérez les projets vitrines affichés sur la page d'accueil (photos, descriptifs, clients et métriques de chantier).
+                        </p>
+                    </div>
+                    <button id="btnOpenAddProjectModal" class="btn-primary-admin">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Nouveau Projet Chantier</span>
+                    </button>
+                </div>
+
+                <div id="adminProjectsGrid" class="admin-projects-grid">
+                    <!-- Généré dynamiquement en JS -->
+                </div>
+            </section>
+
+            <!-- ========================================================== -->
+            <!-- ONGLET 3 : BOÎTE DE RÉCEPTION (DEVIS & RÉSERVATIONS) -->
+            <!-- ========================================================== -->
+            <section id="tabInquiries" class="tab-content">
+                <div class="inquiries-subtabs">
+                    <button class="subtab-btn active" data-subtab="subtabQuotes">
+                        <span>Demandes de Devis (Formulaire Web)</span>
+                        <span id="subtabQuotesCount" class="counter-badge">0</span>
+                    </button>
+                    <button class="subtab-btn" data-subtab="subtabReservations">
+                        <span>Réservations de Matériel (Catalogue)</span>
+                        <span id="subtabResCount" class="counter-badge">0</span>
+                    </button>
+                </div>
+
+                <!-- SOUS-ONGLET DEVIS -->
+                <div id="subtabQuotes" class="inquiries-container active">
+                    <div id="quotesList" class="inquiries-list">
+                        <!-- Généré en JS -->
+                    </div>
+                </div>
+
+                <!-- SOUS-ONGLET RÉSERVATIONS -->
+                <div id="subtabReservations" class="inquiries-container">
+                    <div id="reservationsList" class="inquiries-list">
+                        <!-- Généré en JS -->
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- MODALE : AJOUTER / MODIFIER UN ENGIN DU PARC -->
+    <!-- ============================================================== -->
+    <div id="equipmentModal" class="admin-modal" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="equipmentModalTitle">Ajouter un Engin au Parc</h3>
+                    <button class="modal-close-btn" data-close-modal="equipmentModal">&times;</button>
+                </div>
+                <form id="equipmentForm" class="modal-form">
+                    <input type="hidden" id="eqFormId">
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="eqFormName">Nom commercial de l'engin *</label>
+                            <input type="text" id="eqFormName" placeholder="Ex: Pelle Hydraulique CAT 349D LME" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eqFormCode">Code interne / Réf *</label>
+                            <input type="text" id="eqFormCode" placeholder="Ex: CAT-349D" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label for="eqFormCategory">Catégorie *</label>
+                            <select id="eqFormCategory" required>
+                                <option value="terrassement">Terrassement Lourd</option>
+                                <option value="transport">Transport & Roulage</option>
+                                <option value="levage">Levage & Manutention</option>
+                                <option value="compactage">Compactage de Sol</option>
+                                <option value="forage">Forage & Minage</option>
+                                <option value="energie">Énergie & Groupes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="eqFormTonnage">Tonnage / Poids utile *</label>
+                            <input type="text" id="eqFormTonnage" placeholder="Ex: 49.5 t" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eqFormPower">Puissance moteur *</label>
+                            <input type="text" id="eqFormPower" placeholder="Ex: 283 kW (380 ch)" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label for="eqFormCapacity">Capacité godet / benne</label>
+                            <input type="text" id="eqFormCapacity" placeholder="Ex: Godet 3.2 m³">
+                        </div>
+                        <div class="form-group">
+                            <label for="eqFormYear">Année de mise en service</label>
+                            <input type="number" id="eqFormYear" min="2000" max="2030" value="2023">
+                        </div>
+                        <div class="form-group">
+                            <label for="eqFormStatus">Statut opérationnel initial</label>
+                            <select id="eqFormStatus">
+                                <option value="disponible">Disponible immédiatement</option>
+                                <option value="en_mission">En mission sur chantier</option>
+                                <option value="maintenance">En maintenance préventive</option>
+                                <option value="revision">En révision générale</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eqFormImageUrl">URL de l'image de l'engin *</label>
+                        <input type="url" id="eqFormImageUrl" placeholder="https://images.unsplash.com/..." required>
+                        <span class="field-hint">Collez un lien d'image direct ou utilisez une photo haute définition.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eqFormDescription">Description opérationnelle</label>
+                        <textarea id="eqFormDescription" rows="3" placeholder="Présentation de l'engin, types d'applications et points forts..."></textarea>
+                    </div>
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="eqFormSpecMoteur">Spécification Moteur</label>
+                            <input type="text" id="eqFormSpecMoteur" placeholder="Ex: Cat C13 ACERT">
+                        </div>
+                        <div class="form-group">
+                            <label for="eqFormSpecPortee">Portée / Force</label>
+                            <input type="text" id="eqFormSpecPortee" placeholder="Ex: Force arrachement 262 kN">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" data-close-modal="equipmentModal">Annuler</button>
+                        <button type="submit" class="btn-primary-admin">Enregistrer l'Engin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODALE : AJOUTER / MODIFIER UN PROJET CHANTIER -->
+    <!-- ============================================================== -->
+    <div id="projectModal" class="admin-modal" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="projectModalTitle">Nouveau Projet Réalisation</h3>
+                    <button class="modal-close-btn" data-close-modal="projectModal">&times;</button>
+                </div>
+                <form id="projectForm" class="modal-form">
+                    <input type="hidden" id="projFormId">
+
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="projFormTitle">Titre de la réalisation *</label>
+                            <input type="text" id="projFormTitle" placeholder="Ex: Plateforme Minière & Digue de Rétention" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="projFormCategory">Catégorie d'expertise *</label>
+                            <input type="text" id="projFormCategory" placeholder="Ex: Génie Civil Minier" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label for="projFormClient">Client / Maître d'ouvrage</label>
+                            <input type="text" id="projFormClient" placeholder="Ex: Compagnie Minière du Katanga">
+                        </div>
+                        <div class="form-group">
+                            <label for="projFormLocation">Localisation</label>
+                            <input type="text" id="projFormLocation" placeholder="Ex: Kolwezi, Lualaba, RDC">
+                        </div>
+                        <div class="form-group">
+                            <label for="projFormDate">Année / Période</label>
+                            <input type="text" id="projFormDate" placeholder="Ex: 2024">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projFormImageUrl">Image du projet (Fichier local ou URL)</label>
+                        <input type="text" id="projFormImageUrl" placeholder="projet-genie-civil-minier.png ou URL HTTPS..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projFormDescription">Description du chantier</label>
+                        <textarea id="projFormDescription" rows="3" placeholder="Défis techniques, solutions apportées, résultats..."></textarea>
+                    </div>
+
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label for="projFormMetric1">Métrique 1 (ex: Volume)</label>
+                            <input type="text" id="projFormMetric1" placeholder="Ex: 180 000 m³">
+                        </div>
+                        <div class="form-group">
+                            <label for="projFormMetric2">Métrique 2 (ex: Durée)</label>
+                            <input type="text" id="projFormMetric2" placeholder="Ex: 6 mois">
+                        </div>
+                        <div class="form-group">
+                            <label for="projFormMetric3">Métrique 3 (ex: Sécurité)</label>
+                            <input type="text" id="projFormMetric3" placeholder="Ex: 0 LTI">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" data-close-modal="projectModal">Annuler</button>
+                        <button type="submit" class="btn-primary-admin">Enregistrer le Projet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MODALE : SCRIPT D'INITIALISATION SQL SUPABASE -->
+    <!-- ============================================================== -->
+    <div id="sqlModal" class="admin-modal" style="display: none;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Script SQL d'Initialisation Supabase</h3>
+                    <button class="modal-close-btn" data-close-modal="sqlModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-info-text">
+                        Copiez ce script et collez-le dans votre éditeur SQL Supabase : 
+                        <a href="https://supabase.com/dashboard/project/yvryglqqpjhzelfqwlrp/sql/new" target="_blank" class="link-supabase">
+                            Ouvrir l'éditeur SQL de votre projet yvryglqqpjhzelfqwlrp ↗
+                        </a>
+                    </p>
+                    <div class="sql-code-container">
+                        <pre id="sqlCodeBlock"><code>-- Chargement du script SQL...</code></pre>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnCopySql" class="btn-primary-admin">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span id="btnCopySqlText">Copier le Code SQL</span>
+                    </button>
+                    <button type="button" class="btn-secondary" data-close-modal="sqlModal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="adminToast" class="admin-toast"></div>
+
+    <!-- SCRIPTS -->
+    <script src="supabase-client.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
