@@ -436,6 +436,8 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* Footer / Actions of machine card */
@@ -841,6 +843,8 @@
   font-size: 1.05rem;
   font-weight: 700;
   color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 .machine-modal-section-title {
