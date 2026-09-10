@@ -800,6 +800,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ── FAQ ACCORDION INTERACTIVITY ──
+  const faqItems = document.querySelectorAll('.faq-item');
+  faqItems.forEach((item) => {
+    const questionBtn = item.querySelector('.faq-question');
+    if (!questionBtn) return;
+    questionBtn.addEventListener('click', () => {
+      const isOpen = item.classList.contains('active');
+      faqItems.forEach((other) => {
+        if (other !== item) {
+          other.classList.remove('active');
+          const otherBtn = other.querySelector('.faq-question');
+          if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (isOpen) {
+        item.classList.remove('active');
+        questionBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        item.classList.add('active');
+        questionBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  // ── COOKIE CONSENT BANNER ──
+  const cookieBanner = document.getElementById('cookie-banner');
+  const btnCookieAccept = document.getElementById('btn-cookie-accept');
+  const btnCookieDecline = document.getElementById('btn-cookie-decline');
+
+  if (cookieBanner) {
+    const currentConsent = localStorage.getItem('sixsigma_cookie_consent');
+    if (!currentConsent) {
+      setTimeout(() => {
+        cookieBanner.style.display = 'block';
+      }, 600);
+    }
+
+    if (btnCookieAccept) {
+      btnCookieAccept.addEventListener('click', () => {
+        localStorage.setItem('sixsigma_cookie_consent', 'accepted');
+        cookieBanner.style.opacity = '0';
+        cookieBanner.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+          cookieBanner.style.display = 'none';
+        }, 300);
+      });
+    }
+
+    if (btnCookieDecline) {
+      btnCookieDecline.addEventListener('click', () => {
+        localStorage.setItem('sixsigma_cookie_consent', 'declined');
+        cookieBanner.style.opacity = '0';
+        cookieBanner.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => {
+          cookieBanner.style.display = 'none';
+        }, 300);
+      });
+    }
+  }
+
   // Raccourci secret d'accès direct pour l'administrateur (Ctrl + Shift + A)
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
@@ -809,3 +869,4 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 });
+
