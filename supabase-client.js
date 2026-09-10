@@ -448,7 +448,7 @@ window.SixSigmaDB = {
                         // Secours hors ligne si coupure réseau ou identifiants admin autorisés
                         if (isAdminAccount) {
                             const adminUser = {
-                                id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                                id: '74b79542-a563-4546-8199-6c37f2188929',
                                 email: 'sixsigmaadministration@gmail.com',
                                 role: 'admin'
                             };
@@ -465,7 +465,7 @@ window.SixSigmaDB = {
                     console.warn('Erreur auth Supabase:', err.message);
                     if (isAdminAccount) {
                         const adminUser = {
-                            id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                            id: '74b79542-a563-4546-8199-6c37f2188929',
                             email: 'sixsigmaadministration@gmail.com',
                             role: 'admin'
                         };
@@ -486,7 +486,7 @@ window.SixSigmaDB = {
             } else {
                 if (isAdminAccount) {
                     const adminUser = {
-                        id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                        id: '74b79542-a563-4546-8199-6c37f2188929',
                         email: 'sixsigmaadministration@gmail.com',
                         role: 'admin'
                     };

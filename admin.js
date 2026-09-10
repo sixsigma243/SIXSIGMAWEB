@@ -175,7 +175,7 @@ function initAdminPortal() {
                 );
                 if (isTargetAdmin) {
                     const adminUser = {
-                        id: 'be76a4f3-befc-4730-a21c-39c59a47debc',
+                        id: '74b79542-a563-4546-8199-6c37f2188929',
                         email: email,
                         role: 'admin'
                     };
