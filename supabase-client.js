@@ -40,7 +40,7 @@ const SEED_EQUIPMENT = [
         year: 2023,
         status: 'disponible',
         status_label: 'Disponible',
-        image_url: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=1200&q=80',
+        image_url: 'projet-genie-civil-minier.png',
         description: 'Pelle d\'excavation minière et de terrassement massif équipée de godet renforcé pour roches dures et système de télémétrie par satellite.',
         specs: {
             moteur: 'Cat C13 ACERT',
