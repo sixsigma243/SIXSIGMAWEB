@@ -1,0 +1,16 @@
+# robots.txt for SIX SIGMA RDC
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /parc-materiel.html
+Allow: /hse.html
+Allow: /assets/
+
+# Protection et exclusion stricte des interfaces de gestion
+Disallow: /sixgestion
+Disallow: /sixgestion.html
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /schema.sql
+Disallow: /admin.js
+Disallow: /admin.css
