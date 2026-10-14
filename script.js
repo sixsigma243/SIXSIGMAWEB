@@ -15,6 +15,10 @@ const CONFIG = {
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
+  // Échappement HTML des données dynamiques (base Supabase) avant injection via innerHTML — anti-XSS
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const safeRecord = (o) => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [k, typeof v === 'string' ? escapeHtml(v) : v]));
+
   // ── Hydrate configurable contact info ──
   document.querySelectorAll('[data-config-phone]').forEach((el) => {
     el.textContent = CONFIG.PHONE_DISPLAY;
@@ -105,18 +109,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const mobileLinks = document.querySelectorAll('.mobile-menu-links .nav-link');
 
   const openMobileMenu = () => {
-    mobileMenu.classList.add('active');
-    mobileOverlay.classList.add('active');
+    if (mobileMenu) mobileMenu.classList.add('active');
+    if (mobileOverlay) mobileOverlay.classList.add('active');
+    if (mobileToggle) mobileToggle.classList.add('active');
     document.body.style.overflow = 'hidden';
   };
 
   const closeMobileMenu = () => {
-    mobileMenu.classList.remove('active');
-    mobileOverlay.classList.remove('active');
+    if (mobileMenu) mobileMenu.classList.remove('active');
+    if (mobileOverlay) mobileOverlay.classList.remove('active');
+    if (mobileToggle) mobileToggle.classList.remove('active');
     document.body.style.overflow = '';
   };
 
-  if (mobileToggle) mobileToggle.addEventListener('click', openMobileMenu);
+  const toggleMobileMenu = () => {
+    if (mobileMenu && mobileMenu.classList.contains('active')) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu();
+    }
+  };
+
+  if (mobileToggle) mobileToggle.addEventListener('click', toggleMobileMenu);
   if (mobileClose) mobileClose.addEventListener('click', closeMobileMenu);
   if (mobileOverlay) mobileOverlay.addEventListener('click', closeMobileMenu);
 
@@ -423,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── PROJECT DETAIL MODAL & DYNAMIC SUPABASE HYDRATION ──
   const projectData = {
     'genie-civil': {
-      img: 'projet-genie-civil-minier.png',
+      img: 'projet-genie-civil-minier.jpg',
       video: null,
       title: 'Plateforme Minière & Terrassement de Grande Envergure',
       location: 'Site Minier Industriel, RDC',
@@ -443,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tags: ['Terrassement massif', 'Béton armé C35/45', 'Sécurité HSE', 'Ouvrages hydrauliques', 'Pistes minières', 'Fondations profondes']
     },
     'construction-metallique': {
-      img: 'projet-construction-metallique.png',
+      img: 'projet-construction-metallique.jpg',
       video: null,
       title: 'Complexe Industriel & Charpente Métallique Grande Portée',
       location: 'Zone Industrielle & Logistique',
@@ -539,22 +553,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Badges
     const badgesEl = document.getElementById('modal-badges');
     badgesEl.innerHTML = data.badges.map(b =>
-      `<span class="badge badge-${b.type}"><i class="fa-solid ${b.icon}"></i> ${b.text}</span>`
+      `<span class="badge badge-${b.type}"><i class="fa-solid ${b.icon}"></i> ${escapeHtml(b.text)}</span>`
     ).join('');
 
     // Stats
     const statsEl = document.getElementById('modal-stats');
     statsEl.innerHTML = data.stats.map(s =>
       `<div class="project-modal-stat">
-        <div class="project-modal-stat-value">${s.value}</div>
-        <div class="project-modal-stat-label">${s.label}</div>
+        <div class="project-modal-stat-value">${escapeHtml(s.value)}</div>
+        <div class="project-modal-stat-label">${escapeHtml(s.label)}</div>
       </div>`
     ).join('');
 
     // Tags
     const tagsEl = document.getElementById('modal-tags');
     tagsEl.innerHTML = data.tags.map(t =>
-      `<span class="project-tag">${t}</span>`
+      `<span class="project-tag">${escapeHtml(t)}</span>`
     ).join('');
 
     // Open
@@ -634,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Mémorisation dans projectData pour la fiche technique modale
         projectData[projKey] = {
-          img: p.image_url || 'projet-genie-civil-minier.png',
+          img: p.image_url || 'projet-genie-civil-minier.jpg',
           video: p.video_url || null,
           title: p.title,
           location: (p.location || 'RDC') + (p.client ? ` • Client : ${p.client}` : ''),
@@ -656,28 +670,29 @@ document.addEventListener('DOMContentLoaded', () => {
         card.className = `project-card reveal visible`;
         card.dataset.service = serviceSlug;
 
+        const sp = safeRecord(p);
         const mediaHtml = hasVideo
-          ? `<video src="${p.video_url}" playsinline autoplay muted loop poster="${p.image_url || 'projet-genie-civil-minier.png'}" class="project-img project-video" preload="metadata"></video>`
-          : `<img src="${p.image_url || 'projet-genie-civil-minier.png'}" alt="${p.title}" class="project-img" loading="lazy" onerror="this.src='projet-genie-civil-minier.png'" />`;
+          ? `<video src="${sp.video_url}" playsinline autoplay muted loop poster="${sp.image_url || 'projet-genie-civil-minier.jpg'}" class="project-img project-video" preload="metadata"></video>`
+          : `<img src="${sp.image_url || 'projet-genie-civil-minier.jpg'}" alt="${sp.title}" class="project-img" loading="lazy" onerror="this.src='projet-genie-civil-minier.jpg'" />`;
 
-        const tagsHtml = tags.slice(0, 4).map(t => `<span class="project-tag">${t}</span>`).join('');
+        const tagsHtml = tags.slice(0, 4).map(t => `<span class="project-tag">${escapeHtml(t)}</span>`).join('');
 
         card.innerHTML = `
           <div class="project-image-wrapper">
             ${mediaHtml}
             <div class="project-badges">
-              <span class="badge badge-primary"><i class="fa-solid ${icon}"></i> ${p.category || 'Génie Civil'}</span>
-              <span class="badge badge-success"><i class="fa-solid fa-check"></i> ${p.completion_date || 'En exploitation'}</span>
+              <span class="badge badge-primary"><i class="fa-solid ${icon}"></i> ${sp.category || 'Génie Civil'}</span>
+              <span class="badge badge-success"><i class="fa-solid fa-check"></i> ${sp.completion_date || 'En exploitation'}</span>
               ${hasVideo ? '<span class="badge badge-accent" style="background: rgba(14,165,233,0.95);"><i class="fa-solid fa-play"></i> Vidéo HD</span>' : ''}
             </div>
           </div>
           <div class="project-body">
             <div class="project-meta">
-              <span class="project-location"><i class="fa-solid fa-location-dot"></i> ${p.location || 'RDC'}</span>
-              <span class="project-scale"><i class="fa-solid fa-layer-group"></i> ${p.client || 'Infrastructure'}</span>
+              <span class="project-location"><i class="fa-solid fa-location-dot"></i> ${sp.location || 'RDC'}</span>
+              <span class="project-scale"><i class="fa-solid fa-layer-group"></i> ${sp.client || 'Infrastructure'}</span>
             </div>
-            <h3 class="project-title">${p.title}</h3>
-            <p class="project-desc">${p.description || ''}</p>
+            <h3 class="project-title">${sp.title}</h3>
+            <p class="project-desc">${sp.description || ''}</p>
             <div class="project-tags">
               ${tagsHtml}
             </div>
@@ -752,6 +767,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Lancement des hydratations Supabase
   hydrateChantiers();
   hydrateHeroVideo();
+
+  // Écoute des mises à jour dynamiques émises par le portail /sixgestion ou Supabase Realtime
+  window.addEventListener('sixsigma:chantiers_changed', hydrateChantiers);
+  window.addEventListener('sixsigma:settings_changed', hydrateHeroVideo);
+  window.addEventListener('sixsigma:data_updated', (e) => {
+    const key = (e.detail && e.detail.key) || '';
+    if (key.includes('project') || key.includes('chantier')) {
+      hydrateChantiers();
+    }
+    if (key.includes('hero') || key.includes('setting')) {
+      hydrateHeroVideo();
+    }
+  });
 
   // ── REAL-TIME FORM VALIDATION ──
   const formFields = form ? form.querySelectorAll('.form-input, .form-select, .form-textarea') : [];

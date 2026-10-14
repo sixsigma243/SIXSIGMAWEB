@@ -98,30 +98,38 @@ ALTER TABLE public.demandes_devis ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.demandes_reservation ENABLE ROW LEVEL SECURITY;
 
 -- PARC MATÉRIEL : Lecture publique pour tous les clients, écriture réservée aux utilisateurs connectés (Admin)
+DROP POLICY IF EXISTS "Lecture publique parc_materiel" ON public.parc_materiel;
 CREATE POLICY "Lecture publique parc_materiel" ON public.parc_materiel
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Gestion admin parc_materiel" ON public.parc_materiel;
 CREATE POLICY "Gestion admin parc_materiel" ON public.parc_materiel
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- CHANTIERS : Lecture publique, écriture réservée aux admins
+DROP POLICY IF EXISTS "Lecture publique chantiers" ON public.chantiers_realisations;
 CREATE POLICY "Lecture publique chantiers" ON public.chantiers_realisations
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Gestion admin chantiers" ON public.chantiers_realisations;
 CREATE POLICY "Gestion admin chantiers" ON public.chantiers_realisations
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- DEMANDES DE DEVIS : Création libre par les prospects (anon & auth), lecture/mise à jour réservée aux admins
+DROP POLICY IF EXISTS "Creation devis par visiteurs" ON public.demandes_devis;
 CREATE POLICY "Creation devis par visiteurs" ON public.demandes_devis
     FOR INSERT TO anon, authenticated WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Gestion devis par admins" ON public.demandes_devis;
 CREATE POLICY "Gestion devis par admins" ON public.demandes_devis
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- DEMANDES DE RÉSERVATION : Création libre, gestion réservée aux admins
+DROP POLICY IF EXISTS "Creation reservation par visiteurs" ON public.demandes_reservation;
 CREATE POLICY "Creation reservation par visiteurs" ON public.demandes_reservation
     FOR INSERT TO anon, authenticated WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Gestion reservation par admins" ON public.demandes_reservation;
 CREATE POLICY "Gestion reservation par admins" ON public.demandes_reservation
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -381,6 +389,122 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
 );
 
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Read Settings" ON public.site_settings;
 CREATE POLICY "Public Read Settings" ON public.site_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Admin Update Settings" ON public.site_settings;
 CREATE POLICY "Admin Update Settings" ON public.site_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ------------------------------------------------------------------------------
+-- 9. DURCISSEMENT SÉCURITÉ : ADMINS EXPLICITES, STORAGE, VALIDATION & ANTI-SPAM
+-- (idempotent — remplace les politiques "authenticated = admin" des sections 5 et 8)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.admins (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.admins FROM anon, authenticated;
+
+INSERT INTO public.admins (user_id)
+SELECT id FROM auth.users WHERE lower(email) = 'sixsigmaadministration@gmail.com'
+ON CONFLICT DO NOTHING;
+
+CREATE OR REPLACE FUNCTION public.is_admin() RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = ''
+AS $$ SELECT EXISTS (SELECT 1 FROM public.admins WHERE user_id = auth.uid()) $$;
+REVOKE ALL ON FUNCTION public.is_admin() FROM public, anon;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
+-- Politiques d'écriture : réservées aux comptes présents dans public.admins
+DROP POLICY IF EXISTS "Gestion admin parc_materiel" ON public.parc_materiel;
+CREATE POLICY "Gestion admin parc_materiel" ON public.parc_materiel
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+DROP POLICY IF EXISTS "Gestion admin chantiers" ON public.chantiers_realisations;
+CREATE POLICY "Gestion admin chantiers" ON public.chantiers_realisations
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+DROP POLICY IF EXISTS "Gestion devis par admins" ON public.demandes_devis;
+CREATE POLICY "Gestion devis par admins" ON public.demandes_devis
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+DROP POLICY IF EXISTS "Gestion reservation par admins" ON public.demandes_reservation;
+CREATE POLICY "Gestion reservation par admins" ON public.demandes_reservation
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+DROP POLICY IF EXISTS "Admin Update Settings" ON public.site_settings;
+CREATE POLICY "Admin Update Settings" ON public.site_settings
+    FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- Visiteurs : insertion uniquement avec statut initial et sans note admin
+DROP POLICY IF EXISTS "Creation devis par visiteurs" ON public.demandes_devis;
+CREATE POLICY "Creation devis par visiteurs" ON public.demandes_devis
+    FOR INSERT TO anon, authenticated
+    WITH CHECK (coalesce(status, 'nouveau') = 'nouveau' AND notes_admin IS NULL);
+DROP POLICY IF EXISTS "Creation reservation par visiteurs" ON public.demandes_reservation;
+CREATE POLICY "Creation reservation par visiteurs" ON public.demandes_reservation
+    FOR INSERT TO anon, authenticated
+    WITH CHECK (coalesce(status, 'en_attente') = 'en_attente' AND notes_admin IS NULL);
+
+-- Validation des champs (longueurs & format email)
+ALTER TABLE public.demandes_devis DROP CONSTRAINT IF EXISTS devis_champs_valides;
+ALTER TABLE public.demandes_devis ADD CONSTRAINT devis_champs_valides CHECK (
+    char_length(nom) BETWEEN 2 AND 120
+    AND char_length(email) <= 254 AND email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    AND char_length(coalesce(telephone, '')) <= 40
+    AND char_length(coalesce(entreprise, '')) <= 160
+    AND char_length(coalesce(service, '')) <= 120
+    AND char_length(coalesce(localisation, '')) <= 160
+    AND char_length(coalesce(delai, '')) <= 80
+    AND char_length(coalesce(description, '')) <= 5000
+);
+ALTER TABLE public.demandes_reservation DROP CONSTRAINT IF EXISTS reservation_champs_valides;
+ALTER TABLE public.demandes_reservation ADD CONSTRAINT reservation_champs_valides CHECK (
+    char_length(nom_client) BETWEEN 2 AND 120
+    AND char_length(email) <= 254 AND email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    AND char_length(telephone) <= 40
+    AND char_length(coalesce(entreprise, '')) <= 160
+    AND char_length(coalesce(equipment_name, '')) <= 200
+    AND char_length(coalesce(duree_jours, '')) <= 40
+    AND char_length(coalesce(localisation_chantier, '')) <= 160
+    AND char_length(coalesce(notes_client, '')) <= 5000
+);
+
+-- Anti-spam : 5 demandes / heure / email, 100 demandes / heure au total par table
+CREATE OR REPLACE FUNCTION public.limiter_demandes() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = ''
+AS $$
+DECLARE par_email int; total int;
+BEGIN
+    EXECUTE format('SELECT count(*) FILTER (WHERE lower(email) = lower($1)), count(*) FROM public.%I WHERE created_at > now() - interval ''1 hour''', TG_TABLE_NAME)
+        INTO par_email, total USING NEW.email;
+    IF par_email >= 5 OR total >= 100 THEN
+        RAISE EXCEPTION 'Trop de demandes envoyées. Veuillez réessayer plus tard.' USING ERRCODE = 'P0001';
+    END IF;
+    NEW.created_at := now();
+    RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS limiter_devis ON public.demandes_devis;
+CREATE TRIGGER limiter_devis BEFORE INSERT ON public.demandes_devis
+    FOR EACH ROW EXECUTE FUNCTION public.limiter_demandes();
+DROP TRIGGER IF EXISTS limiter_reservations ON public.demandes_reservation;
+CREATE TRIGGER limiter_reservations BEFORE INSERT ON public.demandes_reservation
+    FOR EACH ROW EXECUTE FUNCTION public.limiter_demandes();
+
+-- Storage : écriture réservée aux admins, pas de listing public (les URL publiques restent accessibles)
+DROP POLICY IF EXISTS "Public Media Read" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Media Read" ON storage.objects;
+CREATE POLICY "Admin Media Read" ON storage.objects
+    FOR SELECT TO authenticated USING (bucket_id = 'sixsigma-media' AND public.is_admin());
+DROP POLICY IF EXISTS "Authenticated Media Insert" ON storage.objects;
+CREATE POLICY "Authenticated Media Insert" ON storage.objects
+    FOR INSERT TO authenticated WITH CHECK (bucket_id = 'sixsigma-media' AND public.is_admin());
+DROP POLICY IF EXISTS "Authenticated Media Update" ON storage.objects;
+CREATE POLICY "Authenticated Media Update" ON storage.objects
+    FOR UPDATE TO authenticated USING (bucket_id = 'sixsigma-media' AND public.is_admin())
+    WITH CHECK (bucket_id = 'sixsigma-media' AND public.is_admin());
+DROP POLICY IF EXISTS "Authenticated Media Delete" ON storage.objects;
+CREATE POLICY "Authenticated Media Delete" ON storage.objects
+    FOR DELETE TO authenticated USING (bucket_id = 'sixsigma-media' AND public.is_admin());
+
+-- Images allégées (PNG 2,5–3,5 Mo -> JPEG 280–500 Ko)
+UPDATE public.chantiers_realisations
+SET image_url = replace(image_url, '.png', '.jpg')
+WHERE image_url IN ('projet-genie-civil-minier.png', 'projet-construction-metallique.png');
 

@@ -4,6 +4,9 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Échappement HTML des données dynamiques (base Supabase) avant injection via innerHTML — anti-XSS
+  const escapeHtml = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const safeRecord = (o) => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [k, typeof v === 'string' ? escapeHtml(v) : v]));
   // ── Données Techniques Détaillées des Machines ──
   const MACHINES_DATA = {
     'cat-336d2l': {
@@ -310,8 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function filterMachines() {
     let visibleCount = 0;
     const query = searchQuery.toLowerCase().trim();
+    const currentCards = document.querySelectorAll('.machine-card');
 
-    machineCards.forEach((card) => {
+    currentCards.forEach((card) => {
       const cardCategory = card.getAttribute('data-category');
       const cardText = card.textContent.toLowerCase();
       const cardKey = card.getAttribute('data-machine-id');
@@ -381,25 +385,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Construction dynamique de la grille technique
     if (modalGrid) {
       let statsHTML = '';
-      if (data.weight) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Poids Opérationnel</div><div class="machine-modal-stat-val">${data.weight}</div></div>`;
-      if (data.power) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Puissance Moteur</div><div class="machine-modal-stat-val">${data.power}</div></div>`;
-      if (data.bucket) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Capacité Godet</div><div class="machine-modal-stat-val">${data.bucket}</div></div>`;
-      if (data.payload) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Charge Utile</div><div class="machine-modal-stat-val">${data.payload}</div></div>`;
-      if (data.capacity) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Capacité Nominale</div><div class="machine-modal-stat-val">${data.capacity}</div></div>`;
-      if (data.depth) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Prof. de fouille</div><div class="machine-modal-stat-val">${data.depth}</div></div>`;
-      if (data.boom) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Longueur Flèche</div><div class="machine-modal-stat-val">${data.boom}</div></div>`;
-      if (data.liftHeight) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Hauteur Levage</div><div class="machine-modal-stat-val">${data.liftHeight}</div></div>`;
-      if (data.flow) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Débit Exhaure</div><div class="machine-modal-stat-val">${data.flow}</div></div>`;
-      if (data.head) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">HMT Pression</div><div class="machine-modal-stat-val">${data.head}</div></div>`;
-      if (data.voltage) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Tension / Sortie</div><div class="machine-modal-stat-val">${data.voltage}</div></div>`;
-      if (data.blade) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Lame & Ripper</div><div class="machine-modal-stat-val">${data.blade}</div></div>`;
+      if (data.weight) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Poids Opérationnel</div><div class="machine-modal-stat-val">${escapeHtml(data.weight)}</div></div>`;
+      if (data.power) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Puissance Moteur</div><div class="machine-modal-stat-val">${escapeHtml(data.power)}</div></div>`;
+      if (data.bucket) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Capacité Godet</div><div class="machine-modal-stat-val">${escapeHtml(data.bucket)}</div></div>`;
+      if (data.payload) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Charge Utile</div><div class="machine-modal-stat-val">${escapeHtml(data.payload)}</div></div>`;
+      if (data.capacity) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Capacité Nominale</div><div class="machine-modal-stat-val">${escapeHtml(data.capacity)}</div></div>`;
+      if (data.depth) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Prof. de fouille</div><div class="machine-modal-stat-val">${escapeHtml(data.depth)}</div></div>`;
+      if (data.boom) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Longueur Flèche</div><div class="machine-modal-stat-val">${escapeHtml(data.boom)}</div></div>`;
+      if (data.liftHeight) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Hauteur Levage</div><div class="machine-modal-stat-val">${escapeHtml(data.liftHeight)}</div></div>`;
+      if (data.flow) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Débit Exhaure</div><div class="machine-modal-stat-val">${escapeHtml(data.flow)}</div></div>`;
+      if (data.head) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">HMT Pression</div><div class="machine-modal-stat-val">${escapeHtml(data.head)}</div></div>`;
+      if (data.voltage) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Tension / Sortie</div><div class="machine-modal-stat-val">${escapeHtml(data.voltage)}</div></div>`;
+      if (data.blade) statsHTML += `<div class="machine-modal-stat"><div class="machine-modal-stat-label">Lame & Ripper</div><div class="machine-modal-stat-val">${escapeHtml(data.blade)}</div></div>`;
 
       modalGrid.innerHTML = statsHTML;
     }
 
     // Liste des équipements & sécurités
     if (modalFeatures && data.features) {
-      modalFeatures.innerHTML = data.features.map(f => `<li><i class="fa-solid fa-check"></i> ${f}</li>`).join('');
+      modalFeatures.innerHTML = data.features.map(f => `<li><i class="fa-solid fa-check"></i> ${escapeHtml(f)}</li>`).join('');
     }
 
     // Mobilisation et opérateur
@@ -519,12 +523,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── Synchronisation Dynamique des Statuts Matériel depuis Supabase ──
+  // ── Synchronisation Dynamique & Temps Réel du Parc Matériel depuis Supabase ──
   async function syncEquipmentWithBackend() {
     if (!window.SixSigmaDB || !window.SixSigmaDB.equipment) return;
     try {
       const items = await window.SixSigmaDB.equipment.getAll();
       if (!items || items.length === 0) return;
+
+      const fleetGrid = document.getElementById('fleet-grid');
+      if (!fleetGrid) return;
 
       const statusClassMap = {
         'disponible': 'available',
@@ -533,27 +540,210 @@ document.addEventListener('DOMContentLoaded', () => {
         'revision': 'maintenance'
       };
 
-      items.forEach(eq => {
-        const codeClean = (eq.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        // Recherche de la carte correspondante
-        const cards = document.querySelectorAll('.machine-card');
-        cards.forEach(card => {
-          const mid = (card.dataset.machineId || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (mid.includes(codeClean) || codeClean.includes(mid) || card.dataset.machineId === eq.id) {
-            const badge = card.querySelector('.machine-status-badge');
-            if (badge) {
-              badge.className = `machine-status-badge ${statusClassMap[eq.status] || 'available'}`;
-              badge.innerHTML = `<i class="fa-solid fa-circle"></i> ${eq.status_label || eq.status}`;
-            }
-          }
-        });
+      const statusLabelMap = {
+        'disponible': 'Disponible',
+        'en_mission': 'En mission',
+        'maintenance': 'En maintenance',
+        'revision': 'En révision'
+      };
+
+      function getCategoryIcon(cat) {
+        cat = (cat || '').toLowerCase();
+        if (cat.includes('terrassement') || cat.includes('excav')) return 'fa-trowel-bricks';
+        if (cat.includes('compactage') || cat.includes('piste') || cat.includes('route')) return 'fa-road';
+        if (cat.includes('transport') || cat.includes('benne') || cat.includes('deblai')) return 'fa-truck-moving';
+        if (cat.includes('levage') || cat.includes('grue') || cat.includes('manut')) return 'fa-dolly';
+        if (cat.includes('energie') || cat.includes('pompe') || cat.includes('groupe')) return 'fa-bolt';
+        return 'fa-truck-monster';
+      }
+
+      function getCategoryLabel(cat) {
+        cat = (cat || '').toLowerCase();
+        if (cat.includes('terrassement')) return 'Terrassement & Extraction';
+        if (cat.includes('compactage')) return 'Compactage & Pistes';
+        if (cat.includes('transport')) return 'Transport & Déblai';
+        if (cat.includes('levage')) return 'Levage & Manutention';
+        if (cat.includes('energie')) return 'Énergie & Pompage';
+        return cat || 'Équipement Spécialisé';
+      }
+
+      // 1. Mettre à jour MACHINES_DATA pour chaque engin issu de Supabase / CMS
+      items.forEach((eq) => {
+        const machineKey = (eq.code || eq.id || '').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const stClass = statusClassMap[eq.status] || 'available';
+        const stLabel = eq.status_label || statusLabelMap[eq.status] || 'Disponible';
+        const catLabel = eq.category_label || getCategoryLabel(eq.category);
+
+        MACHINES_DATA[machineKey] = {
+          ref: eq.code || 'ENGIN',
+          title: eq.name,
+          category: catLabel,
+          status: stLabel,
+          statusClass: stClass,
+          weight: eq.tonnage || (eq.specs && eq.specs.poids) || '',
+          power: eq.power || (eq.specs && eq.specs.puissance) || '',
+          bucket: eq.capacity || (eq.specs && eq.specs.godet) || '',
+          payload: eq.tonnage || (eq.specs && eq.specs.charge_utile) || '',
+          capacity: eq.capacity || '',
+          depth: (eq.specs && eq.specs.profondeur_max) || '',
+          boom: (eq.specs && eq.specs.portee_max) || '',
+          liftHeight: (eq.specs && eq.specs.hauteur_levage) || '',
+          flow: (eq.specs && eq.specs.debit) || '',
+          head: (eq.specs && eq.specs.hmt) || '',
+          voltage: (eq.specs && eq.specs.tension) || '',
+          blade: (eq.specs && eq.specs.lame) || '',
+          engine: (eq.specs && eq.specs.moteur) || '',
+          fuel: (eq.specs && eq.specs.consommation) || '',
+          features: Array.isArray(eq.specs && eq.specs.features) && eq.specs.features.length > 0
+            ? eq.specs.features
+            : [
+                'Contrôle technique et certification SIX SIGMA à jour',
+                'Contrat d\'astreinte et maintenance préventive mobile 24/7',
+                'Conformité stricte aux standards miniers HSE',
+                'Opérateur qualifié CACES disponible sur demande'
+              ],
+          mobilization: eq.mobilization || 'Sous 24h à 48h sur site',
+          operator: eq.operator || 'Opérateur qualifié certifié HSE disponible'
+        };
       });
+
+      // 2. Reconstruire dynamiquement la grille avec les engins à jour
+      fleetGrid.innerHTML = '';
+
+      items.forEach((eq) => {
+        const machineKey = (eq.code || eq.id || '').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+        const stClass = statusClassMap[eq.status] || 'available';
+        const stLabel = eq.status_label || statusLabelMap[eq.status] || 'Disponible';
+        const catSlug = (eq.category || 'terrassement').toLowerCase();
+        const catLabel = eq.category_label || getCategoryLabel(eq.category);
+        const icon = getCategoryIcon(eq.category);
+        const hasImg = Boolean(eq.image_url && eq.image_url.trim() !== '');
+
+        const card = document.createElement('article');
+        card.className = 'machine-card';
+        card.setAttribute('data-category', catSlug);
+        card.setAttribute('data-machine-id', machineKey);
+
+        const sEq = safeRecord(eq);
+        const visualHtml = hasImg
+          ? `<img src="${sEq.image_url}" alt="${sEq.name}" class="machine-img" loading="lazy" onerror="this.style.display='none'" />
+             <div class="machine-visual-overlay"></div>
+             <span class="machine-status-badge ${stClass}"><i class="fa-solid fa-circle"></i> ${escapeHtml(stLabel)}</span>
+             <span class="machine-ref-badge">${sEq.code || 'ENGIN'}</span>`
+          : `<div class="machine-visual-pattern"></div>
+             <i class="fa-solid ${icon} machine-icon-large"></i>
+             <span class="machine-status-badge ${stClass}"><i class="fa-solid fa-circle"></i> ${escapeHtml(stLabel)}</span>
+             <span class="machine-ref-badge">${sEq.code || 'ENGIN'}</span>`;
+
+        card.innerHTML = `
+          <div class="machine-visual">
+            ${visualHtml}
+          </div>
+          <div class="machine-body">
+            <span class="machine-cat-tag">${escapeHtml(catLabel)}</span>
+            <h3 class="machine-title">${sEq.name}</h3>
+            <p class="machine-desc">${sEq.description || 'Engin de chantier lourd certifié pour travaux miniers et grands ouvrages BTP.'}</p>
+            <div class="machine-specs-grid">
+              <div class="machine-spec-item">
+                <span class="machine-spec-label">Poids / Tonnage</span>
+                <span class="machine-spec-value">${sEq.tonnage || 'Standard HD'}</span>
+              </div>
+              <div class="machine-spec-item">
+                <span class="machine-spec-label">Puissance</span>
+                <span class="machine-spec-value">${sEq.power || 'Haute perf.'}</span>
+              </div>
+              <div class="machine-spec-item">
+                <span class="machine-spec-label">Capacité</span>
+                <span class="machine-spec-value">${sEq.capacity || 'Optimisée'}</span>
+              </div>
+              <div class="machine-spec-item">
+                <span class="machine-spec-label">Année / État</span>
+                <span class="machine-spec-value">${sEq.year || 'Certifié'}</span>
+              </div>
+            </div>
+            <div class="machine-actions">
+              <button class="btn-machine-detail" data-machine-id="${machineKey}">
+                <i class="fa-solid fa-circle-info"></i> Fiche technique
+              </button>
+              <button class="btn-machine-reserve" data-machine-id="${machineKey}">
+                <i class="fa-solid fa-calendar-check"></i> Réserver
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Événements sur les boutons de la carte
+        const detailBtn = card.querySelector('.btn-machine-detail');
+        if (detailBtn) {
+          detailBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMachineModal(machineKey);
+          });
+        }
+
+        const reserveBtn = card.querySelector('.btn-machine-reserve');
+        if (reserveBtn) {
+          reserveBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectMachineAndScroll(machineKey);
+          });
+        }
+
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.btn-machine-detail, .btn-machine-reserve')) return;
+          openMachineModal(machineKey);
+        });
+
+        fleetGrid.appendChild(card);
+      });
+
+      // 3. Mettre à jour les compteurs des onglets de catégories
+      filterTabs.forEach((tab) => {
+        const filterVal = tab.getAttribute('data-filter');
+        const countBadge = tab.querySelector('.fleet-tab-count');
+        if (countBadge) {
+          if (filterVal === 'all') {
+            countBadge.textContent = items.length;
+          } else {
+            const count = items.filter(i => (i.category || '').toLowerCase() === filterVal).length;
+            countBadge.textContent = count;
+          }
+        }
+      });
+
+      // 4. Mettre à jour le sélecteur d'engins dans le formulaire de réservation
+      if (machineSelect) {
+        const currentVal = machineSelect.value;
+        machineSelect.innerHTML = '<option value="">Sélectionnez un équipement dans la flotte...</option>';
+        items.forEach((eq) => {
+          const machineKey = (eq.code || eq.id || '').toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+          const opt = document.createElement('option');
+          opt.value = machineKey;
+          opt.textContent = `${eq.name} (${eq.tonnage || eq.code || 'Dispo'})`;
+          machineSelect.appendChild(opt);
+        });
+        if (currentVal) machineSelect.value = currentVal;
+      }
+
+      // 5. Ré-appliquer le filtre actif et rafraîchir le décompte
+      filterMachines();
+
     } catch (e) {
-      console.info('Info sync matériel:', e);
+      console.warn('Erreur synchronisation dynamique équipement:', e);
     }
   }
 
+  // Lancement initial de la synchronisation
   syncEquipmentWithBackend();
+
+  // Écouteurs de mise à jour en direct depuis le portail /sixgestion ou Supabase Realtime
+  window.addEventListener('sixsigma:equipment_changed', syncEquipmentWithBackend);
+  window.addEventListener('sixsigma:data_updated', (e) => {
+    const key = (e.detail && e.detail.key) || '';
+    if (key.includes('equipment') || key.includes('parc')) {
+      syncEquipmentWithBackend();
+    }
+  });
 
   // Réservation WhatsApp
   if (resWhatsappBtn) {

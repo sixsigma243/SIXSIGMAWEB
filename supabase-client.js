@@ -40,7 +40,7 @@ const SEED_EQUIPMENT = [
         year: 2023,
         status: 'disponible',
         status_label: 'Disponible',
-        image_url: 'projet-genie-civil-minier.png',
+        image_url: 'projet-genie-civil-minier.jpg',
         description: 'Pelle d\'excavation minière et de terrassement massif équipée de godet renforcé pour roches dures et système de télémétrie par satellite.',
         specs: {
             moteur: 'Cat C13 ACERT',
@@ -332,7 +332,7 @@ const SEED_PROJECTS = [
         client: 'Compagnie Minière du Katanga',
         location: 'Kolwezi, RDC',
         completion_date: '2024',
-        image_url: 'projet-genie-civil-minier.png',
+        image_url: 'projet-genie-civil-minier.jpg',
         description: 'Terrassement massif de 180 000 m³, aménagement de pistes d\'accès pour engins lourds et construction d\'une digue de retenue en enrochement compacté.',
         metrics: {
             volume_terrassement: '180 000 m³',
@@ -349,7 +349,7 @@ const SEED_PROJECTS = [
         client: 'Société Industrielle de Lubumbashi',
         location: 'Lubumbashi, RDC',
         completion_date: '2023',
-        image_url: 'projet-construction-metallique.png',
+        image_url: 'projet-construction-metallique.jpg',
         description: 'Fabrication et érection d\'une charpente métallique lourde de 450 tonnes d\'acier, portée libre de 38 mètres avec pont roulant de 25 tonnes intégré.',
         metrics: {
             acier_monte: '450 tonnes',
@@ -383,6 +383,9 @@ const Storage = {
     set(key, val) {
         try {
             localStorage.setItem(key, JSON.stringify(val));
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('sixsigma:data_updated', { detail: { key, val } }));
+            }
         } catch (e) {
             console.warn('LocalStorage error:', e);
         }
@@ -406,6 +409,49 @@ const Storage = {
 
 Storage.initSeeds();
 
+// Synchronisation temps réel inter-onglets et écoute des mutations Supabase
+if (typeof window !== 'undefined') {
+    // 1. Écouteur natif d'événements de stockage (détecte instantanément les modifications effectuées dans /sixgestion sur un autre onglet)
+    window.addEventListener('storage', (e) => {
+        if (e.key && (e.key.startsWith('sixsigma_') || e.key.includes('sixsigma'))) {
+            try {
+                const val = e.newValue ? JSON.parse(e.newValue) : null;
+                window.dispatchEvent(new CustomEvent('sixsigma:data_updated', { detail: { key: e.key, val } }));
+                if (e.key.includes('equipment') || e.key.includes('parc')) {
+                    window.dispatchEvent(new CustomEvent('sixsigma:equipment_changed', { detail: { key: e.key, val } }));
+                }
+                if (e.key.includes('project') || e.key.includes('chantier')) {
+                    window.dispatchEvent(new CustomEvent('sixsigma:chantiers_changed', { detail: { key: e.key, val } }));
+                }
+                if (e.key.includes('hero') || e.key.includes('setting')) {
+                    window.dispatchEvent(new CustomEvent('sixsigma:settings_changed', { detail: { key: e.key, val } }));
+                }
+            } catch (err) {
+                window.dispatchEvent(new CustomEvent('sixsigma:data_updated', { detail: { key: e.key } }));
+            }
+        }
+    });
+
+    // 2. Écouteur Supabase Realtime (détecte les modifications réseau multi-appareils si connecté)
+    if (sbClient && typeof sbClient.channel === 'function') {
+        try {
+            sbClient.channel('sixsigma-public-live-sync')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'parc_materiel' }, (payload) => {
+                    window.dispatchEvent(new CustomEvent('sixsigma:equipment_changed', { detail: payload }));
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'chantiers_realisations' }, (payload) => {
+                    window.dispatchEvent(new CustomEvent('sixsigma:chantiers_changed', { detail: payload }));
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, (payload) => {
+                    window.dispatchEvent(new CustomEvent('sixsigma:settings_changed', { detail: payload }));
+                })
+                .subscribe();
+        } catch (rtErr) {
+            console.info('Supabase Realtime subscription note:', rtErr.message);
+        }
+    }
+}
+
 // ==============================================================================
 // COUCHE UNIFIÉE D'ACCÈS AUX DONNÉES (SixSigmaDB)
 // ==============================================================================
@@ -418,92 +464,51 @@ window.SixSigmaDB = {
     // --------------------------------------------------------------------------
     auth: {
         async signIn(email, password) {
-            const cleanEmail = (email || '').trim().toLowerCase();
-            const isAdminAccount = (
-                cleanEmail === 'sixsigmaadministration@gmail.com' &&
-                (password === '***REMOVED***' || password === '***REMOVED***')
-            );
-
-            // 1. Tentative d'authentification directe via le client Supabase officiel
-            if (sbClient) {
-                try {
-                    const { data, error } = await sbClient.auth.signInWithPassword({
-                        email: cleanEmail,
-                        password: password
-                    });
-
-                    if (!error && data && data.user) {
-                        const sessionPayload = {
-                            user: data.user,
-                            session: data.session,
-                            signedInAt: Date.now(),
-                            provider: 'supabase'
-                        };
-                        Storage.set(Storage.KEYS.ADMIN_SESSION, sessionPayload);
-                        return { success: true, user: data.user, session: data.session, provider: 'supabase' };
-                    }
-
-                    if (error) {
-                        console.warn('Supabase Auth response:', error.message);
-                        // Secours hors ligne si coupure réseau ou identifiants admin autorisés
-                        if (isAdminAccount) {
-                            const adminUser = {
-                                id: '74b79542-a563-4546-8199-6c37f2188929',
-                                email: 'sixsigmaadministration@gmail.com',
-                                role: 'admin'
-                            };
-                            Storage.set(Storage.KEYS.ADMIN_SESSION, {
-                                user: adminUser,
-                                signedInAt: Date.now(),
-                                provider: 'offline_verified'
-                            });
-                            return { success: true, user: adminUser, provider: 'offline_verified' };
-                        }
-                        throw error;
-                    }
-                } catch (err) {
-                    console.warn('Erreur auth Supabase:', err.message);
-                    if (isAdminAccount) {
-                        const adminUser = {
-                            id: '74b79542-a563-4546-8199-6c37f2188929',
-                            email: 'sixsigmaadministration@gmail.com',
-                            role: 'admin'
-                        };
-                        Storage.set(Storage.KEYS.ADMIN_SESSION, {
-                            user: adminUser,
-                            signedInAt: Date.now(),
-                            provider: 'offline_verified'
-                        });
-                        return { success: true, user: adminUser, provider: 'offline_verified' };
-                    }
-                    if (cleanEmail === 'admin@sixsigma.cd' && (password === '***REMOVED***' || password === '***REMOVED***')) {
-                        const localUser = { email: 'admin@sixsigma.cd', role: 'admin', id: 'local-admin' };
-                        Storage.set(Storage.KEYS.ADMIN_SESSION, { user: localUser, signedInAt: Date.now(), provider: 'local' });
-                        return { success: true, user: localUser, provider: 'local' };
-                    }
-                    throw err;
-                }
-            } else {
-                if (isAdminAccount) {
-                    const adminUser = {
-                        id: '74b79542-a563-4546-8199-6c37f2188929',
-                        email: 'sixsigmaadministration@gmail.com',
-                        role: 'admin'
-                    };
-                    Storage.set(Storage.KEYS.ADMIN_SESSION, {
-                        user: adminUser,
-                        signedInAt: Date.now(),
-                        provider: 'offline_verified'
-                    });
-                    return { success: true, user: adminUser, provider: 'offline_verified' };
-                }
-                if (cleanEmail === 'admin@sixsigma.cd' && (password === '***REMOVED***' || password === '***REMOVED***')) {
-                    const localUser = { email: 'admin@sixsigma.cd', role: 'admin', id: 'local-admin' };
-                    Storage.set(Storage.KEYS.ADMIN_SESSION, { user: localUser, signedInAt: Date.now(), provider: 'local' });
-                    return { success: true, user: localUser, provider: 'local' };
-                }
-                throw new Error('Identifiants administrateur invalides.');
+            if (!sbClient) {
+                throw new Error('Service d\'authentification indisponible. Vérifiez votre connexion internet.');
             }
+            const { data, error } = await sbClient.auth.signInWithPassword({
+                email: (email || '').trim().toLowerCase(),
+                password: password
+            });
+            if (error || !data || !data.user) {
+                throw new Error(error && error.message ? error.message : 'Identifiants administrateur invalides.');
+            }
+            if (!(await this.isAdmin())) {
+                await sbClient.auth.signOut();
+                throw new Error('Ce compte ne dispose pas des droits administrateur.');
+            }
+            Storage.set(Storage.KEYS.ADMIN_SESSION, {
+                user: { id: data.user.id, email: data.user.email },
+                signedInAt: Date.now(),
+                provider: 'supabase'
+            });
+            return { success: true, user: data.user, session: data.session, provider: 'supabase' };
+        },
+
+        // Vérifie côté base (fonction public.is_admin) que le compte connecté est administrateur.
+        async isAdmin() {
+            if (!sbClient) return false;
+            const { data, error } = await sbClient.rpc('is_admin');
+            if (error) {
+                // PGRST202 : migration de sécurité (schema.sql section 9) pas encore appliquée
+                if (error.code === 'PGRST202') {
+                    console.warn('Fonction is_admin absente : appliquez la section 9 de schema.sql.');
+                    return true;
+                }
+                return false;
+            }
+            return data === true;
+        },
+
+        // Retourne l'utilisateur uniquement si une session Supabase valide et admin existe.
+        async getVerifiedUser() {
+            const session = await this.getSession();
+            if (session && session.user && (await this.isAdmin())) {
+                return { id: session.user.id, email: session.user.email };
+            }
+            localStorage.removeItem(Storage.KEYS.ADMIN_SESSION);
+            return null;
         },
 
         async signOut() {
@@ -529,9 +534,10 @@ window.SixSigmaDB = {
                     console.warn('getSession error:', e);
                 }
             }
-            return Storage.get(Storage.KEYS.ADMIN_SESSION, null);
+            return null;
         },
 
+        // Indication d'interface uniquement (non sécurisée) : utiliser getVerifiedUser() pour l'accès.
         getCurrentUser() {
             const sess = Storage.get(Storage.KEYS.ADMIN_SESSION, null);
             return sess ? sess.user : null;
@@ -547,21 +553,64 @@ window.SixSigmaDB = {
     // --------------------------------------------------------------------------
     equipment: {
         async getAll() {
+            let remoteData = [];
             if (sbClient) {
                 try {
                     const { data, error } = await sbClient
                         .from('parc_materiel')
                         .select('*')
                         .order('display_order', { ascending: true });
-                    if (!error && data && data.length > 0) {
-                        Storage.set(Storage.KEYS.EQUIPMENT, data);
-                        return data;
+                    if (!error && Array.isArray(data)) {
+                        remoteData = data;
                     }
                 } catch (e) {
                     console.info('Supabase fetch fallback to local cache:', e.message);
                 }
             }
-            return Storage.get(Storage.KEYS.EQUIPMENT, SEED_EQUIPMENT);
+
+            // Récupérer les identifiants expressément supprimés par l'admin
+            const deletedIds = new Set(Storage.get('sixsigma_deleted_equipment_ids', []));
+
+            // Récupérer la liste locale
+            const localList = Storage.get(Storage.KEYS.EQUIPMENT, []);
+
+            // Combiner : Seed (base de référence) + Local + Remote (Supabase prioritaire)
+            const map = new Map();
+
+            // 1. Base : SEED_EQUIPMENT (13 engins complets avec photos et spécifications)
+            SEED_EQUIPMENT.forEach(item => {
+                const key = (item.code || item.id || '').toUpperCase();
+                if (!deletedIds.has(key) && !deletedIds.has(item.id)) {
+                    map.set(key, { ...item });
+                }
+            });
+
+            // 2. Cache local (modifications ou ajouts hors-ligne)
+            if (Array.isArray(localList)) {
+                localList.forEach(item => {
+                    const key = (item.code || item.id || '').toUpperCase();
+                    if (!deletedIds.has(key) && !deletedIds.has(item.id)) {
+                        map.set(key, { ...(map.get(key) || {}), ...item });
+                    }
+                });
+            }
+
+            // 3. Supabase Cloud (source de vérité en ligne prioritaire)
+            if (Array.isArray(remoteData) && remoteData.length > 0) {
+                remoteData.forEach(item => {
+                    const key = (item.code || item.id || '').toUpperCase();
+                    if (!deletedIds.has(key) && !deletedIds.has(item.id)) {
+                        map.set(key, { ...(map.get(key) || {}), ...item });
+                    }
+                });
+            }
+
+            const combined = Array.from(map.values()).sort((a, b) => {
+                return (a.display_order || 99) - (b.display_order || 99);
+            });
+
+            Storage.set(Storage.KEYS.EQUIPMENT, combined);
+            return combined;
         },
 
         async getById(id) {
@@ -646,16 +695,25 @@ window.SixSigmaDB = {
         },
 
         async delete(id) {
-            const localList = Storage.get(Storage.KEYS.EQUIPMENT, SEED_EQUIPMENT);
-            const filtered = localList.filter(e => e.id !== id && e.code !== id);
+            const deletedIds = Storage.get('sixsigma_deleted_equipment_ids', []);
+            deletedIds.push(id.toString());
+            deletedIds.push(id.toString().toUpperCase());
+            Storage.set('sixsigma_deleted_equipment_ids', deletedIds);
+
+            const localList = Storage.get(Storage.KEYS.EQUIPMENT, []);
+            const filtered = localList.filter(e => e.id !== id && e.code !== id && (e.code || '').toUpperCase() !== (id || '').toUpperCase());
             Storage.set(Storage.KEYS.EQUIPMENT, filtered);
 
             if (sbClient) {
                 try {
-                    await sbClient.from('parc_materiel').delete().eq('id', id);
+                    await sbClient.from('parc_materiel').delete().or(`id.eq.${id},code.eq.${id}`);
                 } catch (e) {
                     console.warn('Supabase delete failed:', e);
                 }
+            }
+
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('sixsigma:equipment_changed', { detail: { id, deleted: true } }));
             }
             return true;
         }
@@ -692,7 +750,7 @@ window.SixSigmaDB = {
                 client: projectData.client || '',
                 location: projectData.location || 'RDC',
                 completion_date: projectData.completion_date || '2024',
-                image_url: projectData.image_url || 'projet-genie-civil-minier.png',
+                image_url: projectData.image_url || 'projet-genie-civil-minier.jpg',
                 video_url: projectData.video_url || null,
                 description: projectData.description || '',
                 metrics: projectData.metrics || {},
@@ -972,6 +1030,10 @@ window.SixSigmaDB = {
 
         async set(key, value) {
             localStorage.setItem(`sixsigma_setting_${key}`, value);
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('sixsigma:data_updated', { detail: { key: `sixsigma_setting_${key}`, value } }));
+                window.dispatchEvent(new CustomEvent('sixsigma:settings_changed', { detail: { key, value } }));
+            }
             if (sbClient) {
                 try {
                     await sbClient
