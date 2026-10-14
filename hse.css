@@ -723,3 +723,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Mobile : les cartes de confiance dépassaient de l'écran */
+.hse-trust-card {
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .hse-trust-bar {
+    grid-template-columns: 1fr;
+  }
+}

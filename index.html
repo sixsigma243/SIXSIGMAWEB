@@ -202,17 +202,20 @@
       <div class="hero-overlay"></div>
     </div>
 
+    <div class="hero-grid-pattern" aria-hidden="true"></div>
+
     <div class="container">
       <div class="hero-content">
         <!-- Badge -->
         <div class="hero-badge reveal">
-          <i class="fa-solid fa-shield-halved"></i>
+          <span class="hero-badge-dot" aria-hidden="true"></span>
           <span data-i18n="hero_badge">Génie Civil Industriel, Minier &amp; BTP</span>
         </div>
 
         <!-- Title -->
-        <h1 class="hero-title reveal reveal-delay-1" data-i18n="hero_title">
-          Génie Civil Minier &amp; Construction Métallique
+        <h1 class="hero-title reveal reveal-delay-1">
+          <span data-i18n="hero_title_a">Génie Civil Minier</span>
+          <span class="hero-title-accent" data-i18n="hero_title_b">&amp; Construction Métallique</span>
         </h1>
 
         <!-- Subtitle -->
@@ -223,47 +226,47 @@
         <!-- CTA -->
         <div class="hero-actions reveal reveal-delay-3">
           <a href="#contact" class="btn btn-primary btn-lg">
-            <i class="fa-solid fa-file-lines"></i>
             <span data-i18n="hero_cta_quote">Demander une cotation</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </a>
           <a href="#services" class="btn btn-secondary btn-lg btn-hero-secondary">
-            <i class="fa-solid fa-cubes"></i>
             <span data-i18n="hero_cta_services">Découvrir nos expertises</span>
           </a>
         </div>
 
-        <!-- Trust Bar -->
-        <div class="trust-bar reveal reveal-delay-4">
-          <div class="trust-item">
-            <div class="trust-icon red">
-              <i class="fa-solid fa-truck-monster"></i>
-            </div>
-            <div class="trust-text">
-              <strong data-i18n="trust_mob_val">Mobilisation 24-48h</strong>
-              <span data-i18n="trust_mob_lbl">Flotte lourde &amp; engins de terrassement</span>
-            </div>
-          </div>
-          <div class="trust-item">
-            <div class="trust-icon green">
-              <i class="fa-solid fa-shield-heart"></i>
-            </div>
-            <div class="trust-text">
-              <strong data-i18n="trust_hse_val">Normes HSE Internationales</strong>
-              <span data-i18n="trust_hse_lbl">Zéro compromis sur la sécurité terrain</span>
-            </div>
-          </div>
-          <div class="trust-item">
-            <div class="trust-icon dark">
-              <i class="fa-solid fa-earth-africa"></i>
-            </div>
-            <div class="trust-text">
-              <strong>Déploiement Multi-Sites</strong>
-              <span>Mobilité opérationnelle sur tous vos chantiers</span>
-            </div>
-          </div>
+        <!-- Engagements -->
+        <ul class="hero-assurances reveal reveal-delay-4">
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i><span data-i18n="trust_mob_val">Mobilisation 24-48h</span></li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i><span data-i18n="trust_hse_val">Normes HSE Internationales</span></li>
+          <li><i class="fa-solid fa-check" aria-hidden="true"></i><span data-i18n="trust_multi_val">Déploiement multi-sites</span></li>
+        </ul>
+      </div>
+
+      <!-- Chiffres clés -->
+      <div class="hero-kpis reveal reveal-delay-5">
+        <div class="hero-kpi">
+          <span class="hero-kpi-value stat-number" data-target="150" data-suffix="+">150+</span>
+          <span class="hero-kpi-label" data-i18n="kpi_projects">Projets réalisés</span>
+        </div>
+        <div class="hero-kpi">
+          <span class="hero-kpi-value stat-number" data-target="98" data-suffix="%">98%</span>
+          <span class="hero-kpi-label" data-i18n="kpi_satisfaction">Taux de satisfaction</span>
+        </div>
+        <div class="hero-kpi">
+          <span class="hero-kpi-value stat-number" data-target="200" data-suffix="+">200+</span>
+          <span class="hero-kpi-label" data-i18n="kpi_team">Collaborateurs qualifiés</span>
+        </div>
+        <div class="hero-kpi">
+          <span class="hero-kpi-value stat-number" data-target="15" data-suffix="">15</span>
+          <span class="hero-kpi-label" data-i18n="kpi_years">Années d'expérience</span>
         </div>
       </div>
     </div>
+
+    <a href="#services" class="hero-scroll" aria-label="Défiler vers nos services">
+      <span data-i18n="hero_scroll">Découvrir</span>
+      <span class="hero-scroll-line" aria-hidden="true"></span>
+    </a>
 
     <!-- Contrôle vidéo discret -->
     <div class="hero-video-controls">
