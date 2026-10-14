@@ -443,7 +443,8 @@ function initAdminPortal() {
                 updateKpis();
                 showToast(`Statut actualisé sur le site public : ${select.options[select.selectedIndex].text}`, 'success');
             } catch (err) {
-                showToast('Erreur lors du changement de statut', 'error');
+                showToast(`Erreur lors du changement de statut : ${err.message}`, 'error');
+                await loadEquipment(); // rétablit l'affichage réel
             }
         }
     });
@@ -519,13 +520,15 @@ function initAdminPortal() {
             const eq = currentEquipmentList.find(x => x.id === id);
             const name = eq ? eq.name : 'cet engin';
             if (confirm(`Confirmez-vous le retrait de "${name}" du parc matériel vitrine ?`)) {
-                if (window.SixSigmaDB && window.SixSigmaDB.equipment) {
+                try {
                     await window.SixSigmaDB.equipment.delete(id);
+                    currentEquipmentList = currentEquipmentList.filter(x => x.id !== id);
+                    renderEquipment(currentEquipmentList);
+                    updateKpis();
+                    showToast(`Engin "${name}" retiré avec succès.`, 'success');
+                } catch (err) {
+                    showToast(err.message, 'error');
                 }
-                currentEquipmentList = currentEquipmentList.filter(x => x.id !== id);
-                renderEquipment(currentEquipmentList);
-                updateKpis();
-                showToast(`Engin "${name}" retiré avec succès.`, 'success');
             }
         }
     });
@@ -551,16 +554,17 @@ function initAdminPortal() {
                 }
             };
 
-            if (id) {
-                if (window.SixSigmaDB && window.SixSigmaDB.equipment) {
+            try {
+                if (id) {
                     await window.SixSigmaDB.equipment.update(id, itemData);
-                }
-                showToast('Fiche engin mise à jour avec succès.', 'success');
-            } else {
-                if (window.SixSigmaDB && window.SixSigmaDB.equipment) {
+                    showToast('Fiche engin mise à jour avec succès.', 'success');
+                } else {
                     await window.SixSigmaDB.equipment.create(itemData);
+                    showToast('Nouvel engin ajouté au catalogue.', 'success');
                 }
-                showToast('Nouvel engin ajouté au catalogue.', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+                return; // la fenêtre reste ouverte pour ne pas perdre la saisie
             }
 
             if (equipmentModal) equipmentModal.style.display = 'none';
@@ -720,8 +724,11 @@ function initAdminPortal() {
                 }
             };
 
-            if (window.SixSigmaDB && window.SixSigmaDB.chantiers) {
+            try {
                 await window.SixSigmaDB.chantiers.create(projData);
+            } catch (err) {
+                showToast(err.message, 'error');
+                return; // la fenêtre reste ouverte pour ne pas perdre la saisie
             }
             showToast('Chantier ajouté avec succès et synchronisé en direct.', 'success');
             if (projectModal) projectModal.style.display = 'none';
@@ -795,8 +802,11 @@ function initAdminPortal() {
             e.preventDefault();
             const newUrl = heroVideoUrlInput.value.trim();
             if (!newUrl) return;
-            if (window.SixSigmaDB && window.SixSigmaDB.settings) {
+            try {
                 await window.SixSigmaDB.settings.set('hero_video_url', newUrl);
+            } catch (err) {
+                showToast(err.message, 'error');
+                return;
             }
             showToast('Vidéo du Hero mise à jour et active sur le site !', 'success');
             if (heroVideoModal) heroVideoModal.style.display = 'none';
@@ -808,10 +818,12 @@ function initAdminPortal() {
         if (deleteProjBtn) {
             const id = deleteProjBtn.dataset.id;
             if (confirm('Confirmez-vous la suppression de ce projet de la vitrine ?')) {
-                if (window.SixSigmaDB && window.SixSigmaDB.chantiers) {
+                try {
                     await window.SixSigmaDB.chantiers.delete(id);
+                    showToast('Chantier supprimé.', 'success');
+                } catch (err) {
+                    showToast(err.message, 'error');
                 }
-                showToast('Chantier supprimé.', 'success');
                 await loadProjects();
             }
         }
@@ -928,12 +940,14 @@ function initAdminPortal() {
             const id = quoteBtn.dataset.id;
             const current = quoteBtn.dataset.current;
             const newStatus = current === 'nouveau' ? 'traite' : 'nouveau';
-            if (window.SixSigmaDB && window.SixSigmaDB.quotes) {
+            try {
                 await window.SixSigmaDB.quotes.updateStatus(id, newStatus);
+                showToast(`Statut du devis actualisé (${newStatus})`, 'info');
+            } catch (err) {
+                showToast(err.message, 'error');
             }
             await loadInquiries();
             updateKpis();
-            showToast(`Statut du devis actualisé (${newStatus})`, 'info');
         }
 
         const resBtn = e.target.closest('[data-action="toggle-res-status"]');
@@ -941,12 +955,14 @@ function initAdminPortal() {
             const id = resBtn.dataset.id;
             const current = resBtn.dataset.current;
             const newStatus = current === 'en_attente' ? 'confirme' : 'en_attente';
-            if (window.SixSigmaDB && window.SixSigmaDB.reservations) {
+            try {
                 await window.SixSigmaDB.reservations.updateStatus(id, newStatus);
+                showToast(`Statut de réservation actualisé (${newStatus})`, 'info');
+            } catch (err) {
+                showToast(err.message, 'error');
             }
             await loadInquiries();
             updateKpis();
-            showToast(`Statut de réservation actualisé (${newStatus})`, 'info');
         }
     });
 

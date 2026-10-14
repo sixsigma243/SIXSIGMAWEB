@@ -409,6 +409,35 @@ const Storage = {
 
 Storage.initSeeds();
 
+// Écritures du tableau de bord : la base Supabase fait foi. Une écriture refusée ou sans effet
+// (session expirée, droits RLS) lève une erreur affichée à l'admin, au lieu d'un faux succès local.
+function requireDb() {
+    if (!sbClient) throw new Error('Base de données injoignable : vérifiez votre connexion internet.');
+    return sbClient;
+}
+
+function checkWrite({ data, error }, emptyMessage) {
+    if (error) throw new Error(`Enregistrement refusé par la base : ${error.message}`);
+    if (!Array.isArray(data) || data.length === 0) throw new Error(emptyMessage);
+    return data[0];
+}
+
+const CATEGORY_LABELS = {
+    terrassement: 'Terrassement Lourd',
+    transport: 'Transport & Déblai',
+    levage: 'Levage Lourd',
+    compactage: 'Compactage de Sol',
+    energie: 'Énergie de Chantier',
+    forage: 'Forage & Minage'
+};
+
+const STATUS_LABELS = {
+    disponible: 'Disponible',
+    en_mission: 'En mission',
+    maintenance: 'En maintenance',
+    revision: 'En révision'
+};
+
 // Synchronisation temps réel inter-onglets et écoute des mutations Supabase
 if (typeof window !== 'undefined') {
     // 1. Écouteur natif d'événements de stockage (détecte instantanément les modifications effectuées dans /sixgestion sur un autre onglet)
@@ -552,8 +581,8 @@ window.SixSigmaDB = {
     // 2. GESTION DU PARC MATÉRIEL
     // --------------------------------------------------------------------------
     equipment: {
+        // La base Supabase fait foi ; le cache local ne sert que si la base est injoignable.
         async getAll() {
-            let remoteData = [];
             if (sbClient) {
                 try {
                     const { data, error } = await sbClient
@@ -561,56 +590,15 @@ window.SixSigmaDB = {
                         .select('*')
                         .order('display_order', { ascending: true });
                     if (!error && Array.isArray(data)) {
-                        remoteData = data;
+                        Storage.set(Storage.KEYS.EQUIPMENT, data);
+                        return data;
                     }
+                    console.info('Parc matériel : base injoignable, affichage du cache local.', error && error.message);
                 } catch (e) {
-                    console.info('Supabase fetch fallback to local cache:', e.message);
+                    console.info('Parc matériel : base injoignable, affichage du cache local.', e.message);
                 }
             }
-
-            // Récupérer les identifiants expressément supprimés par l'admin
-            const deletedIds = new Set(Storage.get('sixsigma_deleted_equipment_ids', []));
-
-            // Récupérer la liste locale
-            const localList = Storage.get(Storage.KEYS.EQUIPMENT, []);
-
-            // Combiner : Seed (base de référence) + Local + Remote (Supabase prioritaire)
-            const map = new Map();
-
-            // 1. Base : SEED_EQUIPMENT (13 engins complets avec photos et spécifications)
-            SEED_EQUIPMENT.forEach(item => {
-                const key = (item.code || item.id || '').toUpperCase();
-                if (!deletedIds.has(key) && !deletedIds.has(item.id)) {
-                    map.set(key, { ...item });
-                }
-            });
-
-            // 2. Cache local (modifications ou ajouts hors-ligne)
-            if (Array.isArray(localList)) {
-                localList.forEach(item => {
-                    const key = (item.code || item.id || '').toUpperCase();
-                    if (!deletedIds.has(key) && !deletedIds.has(item.id)) {
-                        map.set(key, { ...(map.get(key) || {}), ...item });
-                    }
-                });
-            }
-
-            // 3. Supabase Cloud (source de vérité en ligne prioritaire)
-            if (Array.isArray(remoteData) && remoteData.length > 0) {
-                remoteData.forEach(item => {
-                    const key = (item.code || item.id || '').toUpperCase();
-                    if (!deletedIds.has(key) && !deletedIds.has(item.id)) {
-                        map.set(key, { ...(map.get(key) || {}), ...item });
-                    }
-                });
-            }
-
-            const combined = Array.from(map.values()).sort((a, b) => {
-                return (a.display_order || 99) - (b.display_order || 99);
-            });
-
-            Storage.set(Storage.KEYS.EQUIPMENT, combined);
-            return combined;
+            return Storage.get(Storage.KEYS.EQUIPMENT, SEED_EQUIPMENT);
         },
 
         async getById(id) {
@@ -619,99 +607,64 @@ window.SixSigmaDB = {
         },
 
         async create(itemData) {
+            const category = itemData.category || 'terrassement';
+            const status = itemData.status || 'disponible';
             const newItem = {
                 id: itemData.id || 'eq-' + Date.now(),
                 code: itemData.code || 'ENG-' + Math.floor(100 + Math.random() * 900),
                 name: itemData.name,
-                category: itemData.category || 'terrassement',
-                category_label: itemData.category_label || 'Terrassement Lourd',
+                category,
+                category_label: itemData.category_label || CATEGORY_LABELS[category] || category,
                 tonnage: itemData.tonnage || 'N/A',
                 power: itemData.power || 'N/A',
                 capacity: itemData.capacity || 'N/A',
                 year: itemData.year ? parseInt(itemData.year) : new Date().getFullYear(),
-                status: itemData.status || 'disponible',
-                status_label: itemData.status === 'disponible' ? 'Disponible' : (itemData.status === 'en_mission' ? 'En mission' : 'En maintenance'),
+                status,
+                status_label: STATUS_LABELS[status] || 'Disponible',
                 image_url: itemData.image_url || 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=1200&q=80',
                 description: itemData.description || '',
                 specs: itemData.specs || {},
                 is_featured: itemData.is_featured !== false,
-                display_order: itemData.display_order || 99,
-                created_at: new Date().toISOString()
+                display_order: itemData.display_order || 99
             };
-
-            // 1. Sauvegarde locale immédiate
-            const localList = Storage.get(Storage.KEYS.EQUIPMENT, SEED_EQUIPMENT);
-            localList.unshift(newItem);
-            Storage.set(Storage.KEYS.EQUIPMENT, localList);
-
-            // 2. Sync Supabase si disponible
-            if (sbClient) {
-                try {
-                    await sbClient.from('parc_materiel').insert([newItem]);
-                } catch (e) {
-                    console.warn('Sync Supabase failed, saved locally:', e);
-                }
-            }
-            return newItem;
+            return checkWrite(
+                await requireDb().from('parc_materiel').insert([newItem]).select(),
+                'Engin non enregistré : session admin expirée. Reconnectez-vous.'
+            );
         },
 
         async update(id, updates) {
-            // Mettre à jour le label de statut si le statut change
-            if (updates.status && !updates.status_label) {
-                const map = {
-                    'disponible': 'Disponible',
-                    'en_mission': 'En mission',
-                    'maintenance': 'En maintenance',
-                    'revision': 'En révision'
-                };
-                updates.status_label = map[updates.status] || 'Disponible';
-            }
+            const db = requireDb();
+            const { data: current, error } = await db.from('parc_materiel').select('category, specs').eq('id', id).maybeSingle();
+            if (error) throw new Error(`Lecture de l'engin impossible : ${error.message}`);
+            if (!current) throw new Error('Engin introuvable dans la base.');
 
-            const localList = Storage.get(Storage.KEYS.EQUIPMENT, SEED_EQUIPMENT);
-            const idx = localList.findIndex(e => e.id === id || e.code === id);
-            if (idx !== -1) {
-                localList[idx] = { ...localList[idx], ...updates, updated_at: new Date().toISOString() };
-                Storage.set(Storage.KEYS.EQUIPMENT, localList);
+            const changes = { ...updates, updated_at: new Date().toISOString() };
+            if (changes.status && !changes.status_label) changes.status_label = STATUS_LABELS[changes.status] || 'Disponible';
+            if (changes.category && changes.category !== current.category && !changes.category_label) {
+                changes.category_label = CATEGORY_LABELS[changes.category] || changes.category;
             }
-
-            if (sbClient) {
-                try {
-                    await sbClient.from('parc_materiel').update(updates).eq('id', id);
-                } catch (e) {
-                    console.warn('Supabase update failed:', e);
-                }
+            if (!changes.code) delete changes.code;
+            if (changes.specs) {
+                // Le formulaire ne gère que quelques caractéristiques : les autres sont conservées
+                const filled = Object.entries(changes.specs).filter(([, v]) => v !== '' && v != null);
+                changes.specs = { ...(current.specs || {}), ...Object.fromEntries(filled) };
             }
-            return localList[idx];
+            return checkWrite(
+                await db.from('parc_materiel').update(changes).eq('id', id).select(),
+                'Modification non enregistrée : session admin expirée. Reconnectez-vous.'
+            );
         },
 
         async updateStatus(id, newStatus) {
-            const map = {
-                'disponible': 'Disponible',
-                'en_mission': 'En mission',
-                'maintenance': 'En maintenance',
-                'revision': 'En révision'
-            };
-            return this.update(id, { status: newStatus, status_label: map[newStatus] || 'Disponible' });
+            return this.update(id, { status: newStatus, status_label: STATUS_LABELS[newStatus] || 'Disponible' });
         },
 
         async delete(id) {
-            const deletedIds = Storage.get('sixsigma_deleted_equipment_ids', []);
-            deletedIds.push(id.toString());
-            deletedIds.push(id.toString().toUpperCase());
-            Storage.set('sixsigma_deleted_equipment_ids', deletedIds);
-
-            const localList = Storage.get(Storage.KEYS.EQUIPMENT, []);
-            const filtered = localList.filter(e => e.id !== id && e.code !== id && (e.code || '').toUpperCase() !== (id || '').toUpperCase());
-            Storage.set(Storage.KEYS.EQUIPMENT, filtered);
-
-            if (sbClient) {
-                try {
-                    await sbClient.from('parc_materiel').delete().or(`id.eq.${id},code.eq.${id}`);
-                } catch (e) {
-                    console.warn('Supabase delete failed:', e);
-                }
-            }
-
+            checkWrite(
+                await requireDb().from('parc_materiel').delete().eq('id', id).select(),
+                'Suppression non enregistrée : session admin expirée ou engin introuvable.'
+            );
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('sixsigma:equipment_changed', { detail: { id, deleted: true } }));
             }
@@ -723,6 +676,7 @@ window.SixSigmaDB = {
     // 3. GESTION DES CHANTIERS & RÉALISATIONS
     // --------------------------------------------------------------------------
     chantiers: {
+        // La base fait foi, même vide ; le cache local ne sert que si la base est injoignable.
         async getAll() {
             if (sbClient) {
                 try {
@@ -730,21 +684,21 @@ window.SixSigmaDB = {
                         .from('chantiers_realisations')
                         .select('*')
                         .order('display_order', { ascending: true });
-                    if (!error && data && data.length > 0) {
+                    if (!error && Array.isArray(data)) {
                         Storage.set(Storage.KEYS.PROJECTS, data);
                         return data;
                     }
+                    console.info('Chantiers : base injoignable, affichage du cache local.', error && error.message);
                 } catch (e) {
-                    console.info('Chantiers fallback to local cache:', e.message);
+                    console.info('Chantiers : base injoignable, affichage du cache local.', e.message);
                 }
             }
             return Storage.get(Storage.KEYS.PROJECTS, SEED_PROJECTS);
         },
 
         async create(projectData) {
-            const newId = projectData.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'proj-' + Date.now());
             const newProj = {
-                id: newId,
+                id: projectData.id || (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'proj-' + Date.now()),
                 title: projectData.title,
                 category: projectData.category || 'Génie Civil Minier',
                 client: projectData.client || '',
@@ -755,61 +709,27 @@ window.SixSigmaDB = {
                 description: projectData.description || '',
                 metrics: projectData.metrics || {},
                 is_featured: projectData.is_featured !== false,
-                display_order: projectData.display_order || 99,
-                created_at: new Date().toISOString()
+                display_order: projectData.display_order || 99
             };
-
-            const localList = Storage.get(Storage.KEYS.PROJECTS, SEED_PROJECTS);
-            localList.unshift(newProj);
-            Storage.set(Storage.KEYS.PROJECTS, localList);
-
-            if (sbClient) {
-                try {
-                    const { data, error } = await sbClient.from('chantiers_realisations').insert([newProj]).select();
-                    if (error) {
-                        console.warn('Supabase project insert error:', error.message);
-                    } else if (data && data[0]) {
-                        // Mettre à jour avec l'enregistrement officiel retourné par Supabase
-                        localList[0] = data[0];
-                        Storage.set(Storage.KEYS.PROJECTS, localList);
-                        return data[0];
-                    }
-                } catch (e) {
-                    console.warn('Supabase project insert failed:', e);
-                }
-            }
-            return newProj;
+            return checkWrite(
+                await requireDb().from('chantiers_realisations').insert([newProj]).select(),
+                'Chantier non enregistré : session admin expirée. Reconnectez-vous.'
+            );
         },
 
         async update(id, updates) {
-            const localList = Storage.get(Storage.KEYS.PROJECTS, SEED_PROJECTS);
-            const idx = localList.findIndex(p => p.id === id);
-            if (idx !== -1) {
-                localList[idx] = { ...localList[idx], ...updates, updated_at: new Date().toISOString() };
-                Storage.set(Storage.KEYS.PROJECTS, localList);
-            }
-            if (sbClient) {
-                try {
-                    await sbClient.from('chantiers_realisations').update(updates).eq('id', id);
-                } catch (e) {
-                    console.warn('Supabase project update failed:', e);
-                }
-            }
-            return localList[idx];
+            return checkWrite(
+                await requireDb().from('chantiers_realisations')
+                    .update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id).select(),
+                'Modification non enregistrée : session admin expirée ou chantier introuvable.'
+            );
         },
 
         async delete(id) {
-            const localList = Storage.get(Storage.KEYS.PROJECTS, SEED_PROJECTS);
-            const filtered = localList.filter(p => p.id !== id);
-            Storage.set(Storage.KEYS.PROJECTS, filtered);
-
-            if (sbClient) {
-                try {
-                    await sbClient.from('chantiers_realisations').delete().eq('id', id);
-                } catch (e) {
-                    console.warn('Supabase project delete failed:', e);
-                }
-            }
+            checkWrite(
+                await requireDb().from('chantiers_realisations').delete().eq('id', id).select(),
+                'Suppression non enregistrée : session admin expirée ou chantier introuvable.'
+            );
             return true;
         }
     },
@@ -863,18 +783,10 @@ window.SixSigmaDB = {
         },
 
         async updateStatus(id, status) {
-            const localList = Storage.get(Storage.KEYS.QUOTES, []);
-            const item = localList.find(q => q.id === id);
-            if (item) {
-                item.status = status;
-                Storage.set(Storage.KEYS.QUOTES, localList);
-            }
-            if (sbClient) {
-                try {
-                    await sbClient.from('demandes_devis').update({ status }).eq('id', id);
-                } catch (e) {}
-            }
-            return item;
+            return checkWrite(
+                await requireDb().from('demandes_devis').update({ status }).eq('id', id).select(),
+                'Statut non enregistré : session admin expirée. Reconnectez-vous.'
+            );
         }
     },
 
@@ -930,18 +842,10 @@ window.SixSigmaDB = {
         },
 
         async updateStatus(id, status) {
-            const localList = Storage.get(Storage.KEYS.RESERVATIONS, []);
-            const item = localList.find(r => r.id === id);
-            if (item) {
-                item.status = status;
-                Storage.set(Storage.KEYS.RESERVATIONS, localList);
-            }
-            if (sbClient) {
-                try {
-                    await sbClient.from('demandes_reservation').update({ status }).eq('id', id);
-                } catch (e) {}
-            }
-            return item;
+            return checkWrite(
+                await requireDb().from('demandes_reservation').update({ status }).eq('id', id).select(),
+                'Statut non enregistré : session admin expirée. Reconnectez-vous.'
+            );
         }
     },
 
@@ -1029,23 +933,17 @@ window.SixSigmaDB = {
         },
 
         async set(key, value) {
+            checkWrite(
+                await requireDb()
+                    .from('site_settings')
+                    .upsert({ key: key, value: String(value), updated_at: new Date().toISOString() })
+                    .select(),
+                'Réglage non enregistré : session admin expirée. Reconnectez-vous.'
+            );
             localStorage.setItem(`sixsigma_setting_${key}`, value);
             if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('sixsigma:data_updated', { detail: { key: `sixsigma_setting_${key}`, value } }));
                 window.dispatchEvent(new CustomEvent('sixsigma:settings_changed', { detail: { key, value } }));
-            }
-            if (sbClient) {
-                try {
-                    await sbClient
-                        .from('site_settings')
-                        .upsert({
-                            key: key,
-                            value: String(value),
-                            updated_at: new Date().toISOString()
-                        });
-                } catch (e) {
-                    console.warn('Settings set Supabase failed, stored locally:', e);
-                }
             }
             return { success: true, key, value };
         }

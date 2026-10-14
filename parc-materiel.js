@@ -528,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!window.SixSigmaDB || !window.SixSigmaDB.equipment) return;
     try {
       const items = await window.SixSigmaDB.equipment.getAll();
-      if (!items || items.length === 0) return;
+      if (!Array.isArray(items)) return;
 
       const fleetGrid = document.getElementById('fleet-grid');
       if (!fleetGrid) return;
@@ -609,6 +609,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 2. Reconstruire dynamiquement la grille avec les engins à jour
       fleetGrid.innerHTML = '';
+      if (items.length === 0) {
+        fleetGrid.innerHTML = '<p class="fleet-empty">Notre parc est en cours de mise à jour. Contactez-nous pour toute demande de matériel.</p>';
+      }
 
       items.forEach((eq) => {
         const machineKey = (eq.code || eq.id || '').toLowerCase().replace(/[^a-z0-9_-]/g, '-');

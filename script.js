@@ -626,10 +626,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const projects = await window.SixSigmaDB.chantiers.getAll();
-      if (!projects || projects.length === 0) return; // Garder les 2 projets statiques en fallback
+      if (!Array.isArray(projects)) return;
 
-      // Vider la grille pour afficher les données dynamiques à jour
+      // Vider la grille : la base fait foi, y compris quand l'admin a retiré tous les chantiers
       grid.innerHTML = '';
+      if (projects.length === 0) {
+        grid.innerHTML = '<p class="projects-empty">Nos nouvelles réalisations seront publiées très prochainement.</p>';
+        return;
+      }
 
       projects.forEach((p, idx) => {
         const projKey = p.id || `proj-${idx}`;
