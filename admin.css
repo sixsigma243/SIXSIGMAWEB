@@ -1445,3 +1445,82 @@ body.admin-body {
         align-items: stretch;
     }
 }
+
+/* ============================================
+   AMÉLIORATIONS UX DU TABLEAU DE BORD
+   ============================================ */
+
+/* Icônes vectorielles des indicateurs (remplacent les émojis) */
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.kpi-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.kpi-icon.icon-available { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+.kpi-icon.icon-mission { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+.kpi-icon.icon-maintenance { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+.kpi-icon.icon-quotes { color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+.kpi-icon.icon-reservations { color: #a78bfa; background: rgba(167, 139, 250, 0.1); }
+
+/* Enregistrement en cours : pas de double envoi */
+.btn-primary-admin:disabled,
+.status-select-inline:disabled {
+    opacity: 0.65;
+    cursor: progress;
+}
+
+@media (max-width: 600px) {
+    /* Indicateurs sur 2 colonnes au lieu d'une longue pile */
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .kpi-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 1rem;
+    }
+
+    .kpi-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* En-tête compact */
+    .admin-pill {
+        display: none;
+    }
+
+    .btn-public-preview {
+        font-size: 0; /* icône seule ; le titre « Ouvrir le site public » reste au survol */
+        gap: 0;
+    }
+
+    .btn-public-preview svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .supabase-status-banner {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* Onglets défilables horizontalement */
+    .admin-tabs-nav {
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+}

@@ -629,7 +629,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const sEq = safeRecord(eq);
         const visualHtml = hasImg
-          ? `<img src="${sEq.image_url}" alt="${sEq.name}" class="machine-img" loading="lazy" onerror="this.style.display='none'" />
+          ? `<div class="machine-visual-pattern"></div>
+             <i class="fa-solid ${icon} machine-icon-large machine-icon-fallback"></i>
+             <img src="${sEq.image_url}" alt="${sEq.name}" class="machine-img" loading="lazy" decoding="async" data-fallback="hide" />
              <div class="machine-visual-overlay"></div>
              <span class="machine-status-badge ${stClass}"><i class="fa-solid fa-circle"></i> ${escapeHtml(stLabel)}</span>
              <span class="machine-ref-badge">${sEq.code || 'ENGIN'}</span>`

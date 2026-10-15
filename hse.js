@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = 'hidden';
   }
 
+  // Lien « Demander le dossier complet » : ferme la modale puis suit l'ancre #audit
+  document.querySelectorAll('[data-hse-modal-close]').forEach((link) => {
+    link.addEventListener('click', () => closeHseModal());
+  });
+
   function closeHseModal() {
     if (modal) {
       modal.classList.remove('active');

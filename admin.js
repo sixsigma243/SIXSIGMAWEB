@@ -8,6 +8,32 @@
  * - Diagnostic & Synchronisation Base de Données
  */
 
+// Images de secours (attribut data-fallback) sans gestionnaire onerror en ligne : compatible CSP stricte
+document.addEventListener('error', (e) => {
+    const img = e.target;
+    if (img instanceof HTMLImageElement && img.dataset.fallback && img.getAttribute('src') !== img.dataset.fallback) {
+        img.src = img.dataset.fallback;
+    }
+}, true);
+
+// Empêche le double envoi d'un formulaire : bouton désactivé et « Enregistrement… » pendant la sauvegarde
+function guardSubmit(form, handler) {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector('[type="submit"]');
+        if (!btn || btn.disabled) return;
+        const label = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement…';
+        try {
+            await handler(e);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = label;
+        }
+    });
+}
+
 function initAdminPortal() {
     // Éléments UI principaux
     const loginView = document.getElementById('loginView');
@@ -371,7 +397,7 @@ function initAdminPortal() {
             const sEq = safeRecord(eq);
             card.innerHTML = `
                 <div class="machine-card-media">
-                    <img src="${sEq.image_url}" alt="${sEq.name}" loading="lazy" onerror="this.src='projet-genie-civil-minier.jpg'">
+                    <img src="${sEq.image_url}" alt="${sEq.name}" loading="lazy" data-fallback="projet-genie-civil-minier.jpg">
                     <span class="machine-card-cat">${categoryLabels[sEq.category] || sEq.category}</span>
                 </div>
                 <div class="machine-card-body">
@@ -434,10 +460,9 @@ function initAdminPortal() {
             const newStatus = select.value;
 
             select.className = `status-select-inline ${newStatus}`;
+            select.disabled = true; // pas de second changement avant la fin de l'enregistrement
             try {
-                if (window.SixSigmaDB && window.SixSigmaDB.equipment) {
-                    await window.SixSigmaDB.equipment.updateStatus(id, newStatus);
-                }
+                await window.SixSigmaDB.equipment.updateStatus(id, newStatus);
                 const item = currentEquipmentList.find(x => x.id === id);
                 if (item) item.status = newStatus;
                 updateKpis();
@@ -445,6 +470,8 @@ function initAdminPortal() {
             } catch (err) {
                 showToast(`Erreur lors du changement de statut : ${err.message}`, 'error');
                 await loadEquipment(); // rétablit l'affichage réel
+            } finally {
+                select.disabled = false;
             }
         }
     });
@@ -534,7 +561,7 @@ function initAdminPortal() {
     });
 
     if (equipmentForm) {
-        equipmentForm.addEventListener('submit', async (e) => {
+        guardSubmit(equipmentForm, async (e) => {
             e.preventDefault();
             const id = document.getElementById('eqFormId').value;
             const itemData = {
@@ -614,7 +641,7 @@ function initAdminPortal() {
                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                Vidéo MP4
                            </span>`
-                        : `<img src="${sProj.image_url}" alt="${sProj.title}" onerror="this.src='projet-genie-civil-minier.jpg'">`
+                        : `<img src="${sProj.image_url}" alt="${sProj.title}" data-fallback="projet-genie-civil-minier.jpg">`
                     }
                 </div>
                 <div class="project-card-body">
@@ -706,7 +733,7 @@ function initAdminPortal() {
     }
 
     if (projectForm) {
-        projectForm.addEventListener('submit', async (e) => {
+        guardSubmit(projectForm, async (e) => {
             e.preventDefault();
             const projData = {
                 title: document.getElementById('projFormTitle').value.trim(),
@@ -798,7 +825,7 @@ function initAdminPortal() {
     }
 
     if (heroVideoForm) {
-        heroVideoForm.addEventListener('submit', async (e) => {
+        guardSubmit(heroVideoForm, async (e) => {
             e.preventDefault();
             const newUrl = heroVideoUrlInput.value.trim();
             if (!newUrl) return;

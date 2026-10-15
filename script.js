@@ -12,6 +12,18 @@ const CONFIG = {
   COMPANY: 'SIX SIGMA',
 };
 
+// Images de secours (attribut data-fallback) sans gestionnaire onerror en ligne : compatible CSP stricte.
+// Les erreurs d'image ne remontent pas : écoute en phase de capture.
+document.addEventListener('error', (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || !img.dataset.fallback) return;
+  if (img.dataset.fallback === 'hide') {
+    img.style.display = 'none';
+  } else if (img.getAttribute('src') !== img.dataset.fallback) {
+    img.src = img.dataset.fallback;
+  }
+}, true);
+
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
@@ -417,9 +429,49 @@ document.addEventListener('DOMContentLoaded', () => {
     statNumbers.forEach((el) => counterObserver.observe(el));
   }
 
+  // ── Vidéos économes : rien n'est téléchargé en mode économie de données, en 2G
+  //    ou si le visiteur limite les animations (l'image d'affiche reste visible) ──
+  const connection = navigator.connection || {};
+  const allowVideo = !connection.saveData
+    && !/2g$/.test(connection.effectiveType || '')
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const playVideoFrom = (video, url) => {
+    if (!video || !url || !allowVideo) return;
+    let source = video.querySelector('source');
+    if (!source) {
+      source = document.createElement('source');
+      source.type = 'video/mp4';
+      video.appendChild(source);
+    }
+    if (source.getAttribute('src') === url) return;
+    source.src = url;
+    video.load();
+    video.play().catch(() => {});
+  };
+
+  // Vidéos hors hero : chargées seulement à l'approche de l'écran
+  const lazyVideos = [...document.querySelectorAll('video:not(.hero-video) source[data-src]')].map((s) => s.parentElement);
+  if (lazyVideos.length && 'IntersectionObserver' in window) {
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        videoObserver.unobserve(entry.target);
+        playVideoFrom(entry.target, entry.target.querySelector('source').dataset.src);
+      });
+    }, { rootMargin: '300px 0px' });
+    lazyVideos.forEach((v) => videoObserver.observe(v));
+  }
+
   // ── Hero video playback control ──
   const heroVideo = document.querySelector('.hero-video');
   const heroVideoToggle = document.getElementById('btn-hero-video-toggle');
+
+  // Sans vidéo (économie de données), le bouton lecture/pause n'a pas de sens
+  if (!allowVideo) {
+    const heroVideoControls = document.querySelector('.hero-video-controls');
+    if (heroVideoControls) heroVideoControls.hidden = true;
+  }
 
   if (heroVideo && heroVideoToggle) {
     heroVideoToggle.addEventListener('click', () => {
@@ -677,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sp = safeRecord(p);
         const mediaHtml = hasVideo
           ? `<video src="${sp.video_url}" playsinline autoplay muted loop poster="${sp.image_url || 'projet-genie-civil-minier.jpg'}" class="project-img project-video" preload="metadata"></video>`
-          : `<img src="${sp.image_url || 'projet-genie-civil-minier.jpg'}" alt="${sp.title}" class="project-img" loading="lazy" onerror="this.src='projet-genie-civil-minier.jpg'" />`;
+          : `<img src="${sp.image_url || 'projet-genie-civil-minier.jpg'}" alt="${sp.title}" class="project-img" loading="lazy" data-fallback="projet-genie-civil-minier.jpg" />`;
 
         const tagsHtml = tags.slice(0, 4).map(t => `<span class="project-tag">${escapeHtml(t)}</span>`).join('');
 
@@ -743,29 +795,21 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ── HYDRATATION DU HERO VIDÉO DEPUIS SUPABASE SETTINGS ──
+  // La vidéo réglée dans /sixgestion est lue en priorité ; un seul téléchargement au total
   const hydrateHeroVideo = async () => {
-    if (!window.SixSigmaDB || !window.SixSigmaDB.settings) return;
+    const heroVideoEl = document.querySelector('.hero-video');
+    if (!heroVideoEl) return;
+    const defaultSource = heroVideoEl.querySelector('source[data-src]');
+    let url = defaultSource ? defaultSource.dataset.src : null;
     try {
-      const customHeroUrl = await window.SixSigmaDB.settings.get('hero_video_url');
-      if (customHeroUrl && customHeroUrl.trim() !== '') {
-        const heroVideo = document.querySelector('.hero-video');
-        if (heroVideo) {
-          let source = heroVideo.querySelector('source');
-          if (!source) {
-            source = document.createElement('source');
-            heroVideo.appendChild(source);
-          }
-          if (source.src !== customHeroUrl) {
-            source.src = customHeroUrl;
-            source.type = 'video/mp4';
-            heroVideo.load();
-            heroVideo.play().catch(() => {});
-          }
-        }
+      if (window.SixSigmaDB && window.SixSigmaDB.settings) {
+        const customHeroUrl = await window.SixSigmaDB.settings.get('hero_video_url');
+        if (customHeroUrl && customHeroUrl.trim() !== '') url = customHeroUrl.trim();
       }
     } catch (e) {
       console.info('Hero video hydration skipped:', e);
     }
+    playVideoFrom(heroVideoEl, url);
   };
 
   // Lancement des hydratations Supabase

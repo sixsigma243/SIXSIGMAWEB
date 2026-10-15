@@ -81,6 +81,8 @@
   </script>
 
   <!-- Fonts -->
+  <!-- Image d'affiche du hero (plus grand élément visible) : téléchargée en priorité -->
+  <link rel="preload" as="image" href="projet-genie-civil-minier.jpg" fetchpriority="high" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -194,10 +196,10 @@
         muted
         loop
         playsinline
-        preload="auto"
+        preload="none"
         poster="projet-genie-civil-minier.jpg"
       >
-        <source src="assets/mine-kolwezi.mp4" type="video/mp4" />
+        <source data-src="assets/mine-kolwezi.mp4" type="video/mp4" />
       </video>
       <div class="hero-overlay"></div>
     </div>
@@ -572,7 +574,7 @@
                 preload="metadata"
                 poster="projet-construction-metallique.jpg"
               >
-                <source src="assets/equipes-kolwezi.mp4" type="video/mp4" />
+                <source data-src="assets/equipes-kolwezi.mp4" type="video/mp4" />
               </video>
               <div class="values-video-badge">
                 <i class="fa-solid fa-hard-hat"></i> Équipes SIX SIGMA en action — Déploiement terrain
